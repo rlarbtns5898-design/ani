@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
 
-	// 웹
+	// 웹g
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
 	// 템플릿 (Thymeleaf 쓸 경우만)
