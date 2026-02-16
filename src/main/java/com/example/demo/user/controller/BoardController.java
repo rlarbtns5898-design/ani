@@ -19,6 +19,10 @@ public class BoardController {
         model.addAttribute("boardList",boardService.findAll());
         return "board";
     }
+    @GetMapping("/write")
+    public String writePage(){
+        return "board_write";
+    }
 
     @PostMapping("/write")
     public String write(@RequestParam String title,
