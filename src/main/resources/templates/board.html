@@ -23,10 +23,13 @@
         <th>작성자</th>
         <th>삭제</th>
     </tr>
-
+c
     <tr th:each="board : ${boardList}">
         <td th:text="${board.id}"></td>
-        <td th:text="${board.title}"></td>
+        <td>
+            <a th:href="@{/board/{id}(id=${board.id})}"
+               th:text="${board.title}"></a>
+        </td>
         <td th:text="${board.user.username}"></td>
         <td>
             <form th:action="@{/board/delete/{id}(id=${board.id})}" method="post">

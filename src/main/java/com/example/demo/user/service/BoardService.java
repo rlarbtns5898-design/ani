@@ -18,7 +18,10 @@ public class BoardService {
     public List<Board> findAll(){
         return boardRepository.findAll();
     }
-
+    public Board findById(Long id) {
+        return boardRepository.findById(id)
+                .orElseThrow();
+    }
     public void write(String title, String content, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow();

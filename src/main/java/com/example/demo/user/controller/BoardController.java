@@ -40,4 +40,9 @@ public class BoardController {
         boardService.delete(id, userDetails.getUsername());
         return "redirect:/board";
     }
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        model.addAttribute("board", boardService.findById(id));
+        return "board_detail";
+    }
 }
