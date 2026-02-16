@@ -22,7 +22,7 @@ public class SecurityConfig {
                         .loginPage("/login")              // 우리가 만든 로그인 페이지
                         .loginProcessingUrl("/login")     // form action과 동일해야 함
                         .failureUrl("/login?error=true")  // 로그인 실패 시 이동
-                        .defaultSuccessUrl("/", true)     // 로그인 성공 시 이동
+                        .defaultSuccessUrl("/board", true)     // 로그인 성공 시 이동
                         .permitAll()
                 )
                 .logout(logout -> logout

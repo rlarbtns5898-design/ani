@@ -5,10 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -16,13 +14,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class BoardController {
     private final BoardService boardService;
 
+    @GetMapping("")
+    public String boardPage(Model model){
+        model.addAttribute("boardList",boardService.findAll());
+        return "board";
+    }
+
     @PostMapping("/write")
     public String write(@RequestParam String title,
                         @RequestParam String content,
                         @AuthenticationPrincipal UserDetails userDetails) {
 
         boardService.write(title, content, userDetails.getUsername());
-        return "redirect:/home";
+        return "redirect:/board";
     }
 
     @PostMapping("/delete/{id}")
@@ -30,6 +34,6 @@ public class BoardController {
                          @AuthenticationPrincipal UserDetails userDetails) {
 
         boardService.delete(id, userDetails.getUsername());
-        return "redirect:/home";
+        return "redirect:/board";
     }
 }

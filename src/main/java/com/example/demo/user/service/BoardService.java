@@ -7,11 +7,17 @@ import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+
+    public List<Board> findAll(){
+        return boardRepository.findAll();
+    }
 
     public void write(String title, String content, String username) {
         User user = userRepository.findByUsername(username)
