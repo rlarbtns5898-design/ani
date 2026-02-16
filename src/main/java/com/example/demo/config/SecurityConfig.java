@@ -26,6 +26,10 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/board/write", "/board/delete/**").authenticated()
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
