@@ -15,6 +15,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/register", "/css/**").permitAll()
+                        .requestMatchers("/board/write", "/board/delete/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -26,11 +27,8 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/board/write", "/board/delete/**").authenticated()
-                        .anyRequest().permitAll()
                 );
+
 
         return http.build();
     }
