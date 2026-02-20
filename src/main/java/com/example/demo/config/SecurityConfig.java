@@ -16,17 +16,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/register", "/css/**").permitAll()
                         .requestMatchers("/board/write", "/board/delete/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")              // 우리가 만든 로그인 페이지
-                        .loginProcessingUrl("/login")     // form action과 동일해야 함
-                        .failureUrl("/login?error=true")  // 로그인 실패 시 이동
-                        .defaultSuccessUrl("/board", true)     // 로그인 성공 시 이동
-                        .permitAll()
+                        .loginPage("/login")                                      .loginProcessingUrl("/login")
+                        .failureUrl("/login?error=true")
+                        .defaultSuccessUrl("/home", true)                            .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
+
                 );
 
 

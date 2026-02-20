@@ -39,7 +39,7 @@ public class BoardService {
         Board board = boardRepository.findById(id)
                 .orElseThrow();
 
-        // 자기 글만 삭제 가능
+
         if (!board.getUser().getUsername().equals(username)) {
             throw new RuntimeException("권한 없음");
         }

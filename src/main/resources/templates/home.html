@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>홈</title>
+  <title>메인 메뉴</title>
 </head>
 <body>
-<h2>로그인 성공 🎉</h2>
 
-<form th:action="@{/logout}" method="post">
-  <button type="submit">로그아웃</button>
-</form>
+<h1>메인 메뉴</h1>
+
+<ul>
+  <li><a href="/board">게시판</a></li>
+  <li><a href="/mypage">마이페이지</a></li>
+
+  <!-- 관리자만 보이게 -->
+  <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+    <a href="/admin/users">회원 관리</a>
+  </li>
+</ul>
+
+<a href="/logout">로그아웃</a>
 
 </body>
 </html>
