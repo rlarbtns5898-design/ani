@@ -11,7 +11,13 @@
     <div th:each="anime : ${result.data}">
         <h2 th:text="${anime.title}"></h2>
         <img th:src="${anime.images.jpg.image_url}" width="150">
-        <p th:text="${anime.synopsis}"></p>
+        <p><strong>장르:</strong>
+            <span th:each="genre, stat : ${anime.genres}">
+                 <span th:text="${genre.name}"></span>
+                <span th:if="${!stat.last}">, </span>
+            </span>
+        </p>
+
         <p>평점: <span th:text="${anime.score}"></span></p>
         <hr>
     </div>
