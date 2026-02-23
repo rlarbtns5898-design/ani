@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 public class AnimeController {
@@ -44,14 +46,19 @@ public class AnimeController {
         if (condition.getEndDate() != null && !condition.getEndDate().isEmpty())
             builder.queryParam("end_date", condition.getEndDate());
 
-        if (condition.getGenres() != null && !condition.getGenres().isEmpty())
-            builder.queryParam("genres", String.join(",", condition.getGenres()));
+        Set<String> allGenres = new LinkedHashSet<>();
 
-        if (condition.getThemes() != null && !condition.getThemes().isEmpty())
-            builder.queryParam("genres", String.join(",", condition.getThemes()));
+        if (condition.getGenres() != null)
+            allGenres.addAll(condition.getGenres());
 
-        if (condition.getDemographics() != null && !condition.getDemographics().isEmpty())
-            builder.queryParam("genres", String.join(",", condition.getDemographics()));
+        if (condition.getThemes() != null)
+            allGenres.addAll(condition.getThemes());
+
+        if (condition.getDemographics() != null)
+            allGenres.addAll(condition.getDemographics());
+
+        if (!allGenres.isEmpty())
+            builder.queryParam("genres", String.join(",", allGenres));
 
         if (condition.getOrderBy() != null && !condition.getOrderBy().isEmpty())
             builder.queryParam("order_by", condition.getOrderBy());
