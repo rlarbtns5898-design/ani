@@ -8,7 +8,7 @@ public class AnimeSearchCondition {
     private String type;
     private String status;
     private String rating;
-    private Double minScore;
+    private Double minscore;
     private String startDate;
     private String endDate;
 
