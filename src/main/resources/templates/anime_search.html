@@ -1,18 +1,107 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <title>애니메이션 검색</title>
-</head>
-<body>
+  <head>
+    <title>애니메이션 검색</title>
+  </head>
+  <body>
+    <h1>애니메이션 검색</h1>
 
-<h1>애니메이션 검색</h1>
+    <form action="/anime/search" method="get">
+      <!-- 🔎 기본 검색 -->
+      <div>
+        <input type="text" name="keyword" placeholder="애니 제목 입력" />
+      </div>
 
-<form action="/anime/search" method="get">
-  <input type="text" name="keyword" placeholder="애니 제목 입력">
-  <button type="submit">검색</button>
-</form>
+      <hr />
 
-<a href="/home">메인으로</a>
+      <!-- 🎛 Filters -->
+      <h3>Filters</h3>
 
-</body>
+      <div>
+        <label>작품 유형:</label>
+        <select name="type">
+          <option value="">All</option>
+          <option value="tv">TV</option>
+          <option value="movie">Movie</option>
+          <option value="ova">OVA</option>
+          <option value="ova">Special</option>
+          <option value="ova">ONA</option>
+          <option value="ova">Music</option>
+          <option value="ova">CM</option>
+          <option value="ova">PV</option>
+          <option value="ova">TV Special</option>
+        </select>
+      </div>
+
+      <div>
+        <label>방영 상태:</label>
+        <select name="status">
+          <option value="">All</option>
+          <option value="airing">방영 중</option>
+          <option value="complete">방영 완료</option>
+          <option value="upcoming">방영 예정</option>
+        </select>
+      </div>
+
+      <div>
+        <label>연령 등급:</label>
+        <select name="rating">
+          <option value="">All</option>
+          <option value="g">전체 이용가 (G)</option>
+          <option value="pg">보호자 지도 권장 (PG)</option>
+          <option value="pg13">13세 이상 권장 (PG-13)</option>
+          <option value="r17">17세 이상 시청가 (R-17)</option>
+          <option value="r">성인 이용가 (R)</option>
+        </select>
+      </div>
+
+      <div>
+        <label>최소 평점:</label>
+        <input type="number" name="min_score" min="0" max="10" step="0.1" />
+      </div>
+
+      <div>
+        <label>방영 시작일:</label>
+        <input type="date" name="startDate" />
+      </div>
+
+      <div>
+        <label>방영 종료일:</label>
+        <input type="date" name="endDate" />
+      </div>
+
+      <hr />
+
+      <!-- 🎭 Content Filter -->
+      <h3>장르</h3>
+
+      <div>
+        <input type="checkbox" name="genres" value="1" /> 액션
+        <input type="checkbox" name="genres" value="2" /> 모험
+        <input type="checkbox" name="genres" value="4" /> 코미디
+        <input type="checkbox" name="genres" value="8" /> 드라마
+        <input type="checkbox" name="genres" value="22" /> 로맨스
+      </div>
+
+      <h3>테마</h3>
+      <div>
+        <input type="checkbox" name="themes" value="10" /> 이세계
+        <input type="checkbox" name="themes" value="23" /> 학원물
+        <input type="checkbox" name="themes" value="27" /> 심리
+      </div>
+
+      <h3>독자층</h3>
+      <div>
+        <input type="checkbox" name="demographics" value="1" /> 소년
+        <input type="checkbox" name="demographics" value="3" /> 소녀
+      </div>
+
+      <hr />
+
+      <button type="submit">Search</button>
+    </form>
+
+    <br />
+    <a href="/home">메인으로</a>
+  </body>
 </html>

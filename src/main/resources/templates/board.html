@@ -1,45 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
+  <head>
     <title>게시판</title>
-</head>
-<body>
+  </head>
+  <body>
+    <h1>📌 게시판</h1>
 
-<h1>📌 게시판</h1>
+    <a href="/board/write">글쓰기</a>
+    <form action="/logout" method="post" style="display: inline">
+      <input
+        type="hidden"
+        th:name="${_csrf.parameterName}"
+        th:value="${_csrf.token}"
+      />
+      <button type="submit">로그아웃</button>
+    </form>
 
-<a href="/board/write">글쓰기</a>
-<form action="/logout" method="post" style="display:inline;">
-    <input type="hidden" th:name="${_csrf.parameterName}"
-           th:value="${_csrf.token}"/>
-    <button type="submit">로그아웃</button>
-</form>
+    <hr />
 
-<hr>
-
-<table border="1">
-    <tr>
+    <table border="1">
+      <tr>
         <th>번호</th>
         <th>제목</th>
         <th>작성자</th>
         <th>삭제</th>
-    </tr>
-c
-    <tr th:each="board : ${boardList}">
+      </tr>
+      c
+      <tr th:each="board : ${boardList}">
         <td th:text="${board.id}"></td>
         <td>
-            <a th:href="@{/board/{id}(id=${board.id})}"
-               th:text="${board.title}"></a>
+          <a
+            th:href="@{/board/{id}(id=${board.id})}"
+            th:text="${board.title}"
+          ></a>
         </td>
         <td th:text="${board.user.username}"></td>
         <td>
-            <form th:action="@{/board/delete/{id}(id=${board.id})}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}"/>
-                <button type="submit">삭제</button>
-            </form>
+          <form th:action="@{/board/delete/{id}(id=${board.id})}" method="post">
+            <input
+              type="hidden"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
+            <button type="submit">삭제</button>
+          </form>
         </td>
-    </tr>
-</table>
-
-</body>
+      </tr>
+    </table>
+  </body>
 </html>
