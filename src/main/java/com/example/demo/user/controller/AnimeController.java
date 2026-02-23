@@ -48,10 +48,10 @@ public class AnimeController {
             builder.queryParam("genres", String.join(",", condition.getGenres()));
 
         if (condition.getThemes() != null && !condition.getThemes().isEmpty())
-            builder.queryParam("themes", String.join(",", condition.getThemes()));
+            builder.queryParam("genres", String.join(",", condition.getThemes()));
 
         if (condition.getDemographics() != null && !condition.getDemographics().isEmpty())
-            builder.queryParam("demographics", String.join(",", condition.getDemographics()));
+            builder.queryParam("genres", String.join(",", condition.getDemographics()));
 
         if (condition.getOrderBy() != null && !condition.getOrderBy().isEmpty())
             builder.queryParam("order_by", condition.getOrderBy());
