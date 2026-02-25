@@ -24,7 +24,7 @@ public class AnimeService {
         JikanResponseDTO response =
                 restTemplate.getForObject(url, JikanResponseDTO.class);
 
-        LocalDate targetDate = LocalDate.of(2023, 1, 1);
+        LocalDate targetDate = LocalDate.of(2025, 10, 1);
 
         for (AnimeDTO dto : response.getData()) {
 

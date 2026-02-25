@@ -12,7 +12,7 @@ public class AnimedbController {
 
     @GetMapping("/anime/save")
     public String saveAnime() {
-        animeService.saveRecentTvAnime();
+        animeService.saveRecentAnime();
         return "저장 완료";
     }
 
