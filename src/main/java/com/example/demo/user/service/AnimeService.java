@@ -18,37 +18,29 @@ public class AnimeService {
 
     public void saveRecentAnime() {
 
-        String url = "https://api.jikan.moe/v4/anime";
+        for (int page = 1; page <= 50; page++) {
 
-        RestTemplate restTemplate = new RestTemplate();
-        JikanResponseDTO response =
-                restTemplate.getForObject(url, JikanResponseDTO.class);
+            String url =
+                    "https://api.jikan.moe/v4/anime?start_date=2019-01-01&page=" + page;
 
-        LocalDate targetDate = LocalDate.of(2025, 10, 1);
+            RestTemplate restTemplate = new RestTemplate();
+            JikanResponseDTO response =
+                    restTemplate.getForObject(url, JikanResponseDTO.class);
 
-        for (AnimeDTO dto : response.getData()) {
+            for (AnimeDTO dto : response.getData()) {
 
-            // 1️⃣ 타입 필터
-            if (dto.getType() == null) continue;
+                if (dto.getType() == null) continue;
 
-            String type = dto.getType().toLowerCase();
+                String type = dto.getType().toLowerCase();
 
-            if (!(type.equals("tv") ||
-                    type.equals("ova") ||
-                    type.equals("movie"))) {
-                continue;
-            }
-
-            // 2️⃣ 방영일 필터
-            if (dto.getAired() == null || dto.getAired().getFrom() == null)
-                continue;
-
-            LocalDate airedDate =
-                    LocalDate.parse(dto.getAired().getFrom().substring(0, 10));
-
-            if (airedDate.isAfter(targetDate)) {
+                if (!(type.equals("tv") ||
+                        type.equals("ova") ||
+                        type.equals("movie"))) continue;
 
                 if (!animeRepository.existsByTitle(dto.getTitle())) {
+
+                    LocalDate airedDate =
+                            LocalDate.parse(dto.getAired().getFrom().substring(0, 10));
 
                     Anime anime = new Anime();
                     anime.setTitle(dto.getTitle());
