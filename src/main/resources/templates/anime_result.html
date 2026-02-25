@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
+  <head>
     <title>검색 결과</title>
-</head>
-<body>
+  </head>
+  <body>
+    <h1>검색 결과</h1>
 
-<h1>검색 결과</h1>
-
-<div th:if="${result != null}">
-    <div th:each="anime : ${result.data}">
-        <h2 th:text="${anime.title}"></h2>
-        <img th:src="${anime.images.jpg.image_url}" width="150">
-        <p><strong>장르:</strong>
-            <span th:each="genre, stat : ${anime.genres}">
-                 <span th:text="${genre.name}"></span>
-                <span th:if="${!stat.last}">, </span>
-            </span>
+    <div th:if="${result != null}">
+      <div th:each="anime : ${result.data}">
+        <h2>
+          <a
+            th:href="@{/anime/{id}(id=${anime.mal_id})}"
+            th:text="${anime.title}"
+          >
+          </a>
+        </h2>
+        <a th:href="@{/anime/{id}(id=${anime.mal_id})}">
+          <img th:src="${anime.images.jpg.image_url}" width="150" />
+        </a>
+        <p>
+          <strong>장르:</strong>
+          <span th:each="genre, stat : ${anime.genres}">
+            <span th:text="${genre.name}"></span>
+            <span th:if="${!stat.last}">, </span>
+          </span>
         </p>
 
         <p>평점: <span th:text="${anime.score}"></span></p>
-        <hr>
+        <hr />
+      </div>
     </div>
-</div>
 
-<a href="/home">메인으로</a>
-
-</body>
+    <a href="/home">메인으로</a>
+  </body>
 </html>

@@ -4,6 +4,7 @@ import com.example.demo.user.dto.AnimeSearchCondition;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -74,5 +75,18 @@ public class AnimeController {
         model.addAttribute("result", response);
 
         return "anime_result";
+    }
+
+        @GetMapping("/anime/{id}")
+        public String animeDetail(@PathVariable Integer id, Model model) {
+
+        String url = "https://api.jikan.moe/v4/anime/" + id;
+
+        RestTemplate restTemplate = new RestTemplate();
+        Map response = restTemplate.getForObject(url, Map.class);
+
+        model.addAttribute("anime", response.get("data"));
+
+        return "anime_detail";
     }
 }

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>상세 정보</title>
+  </head>
+  <body>
+    <h1 th:text="${anime.title}"></h1>
+
+    <img th:src="${anime.images.jpg.image_url}" width="200" />
+
+    <p><strong>타입:</strong> <span th:text="${anime.type}"></span></p>
+
+    <p>
+      <strong>에피소드:</strong>
+      <span
+        th:text="${anime.episodes != null ? anime.episodes : '정보 없음'}"
+      ></span>
+    </p>
+
+    <p><strong>방영:</strong> <span th:text="${anime.status}"></span></p>
+
+    <p><strong>평점:</strong> <span th:text="${anime.score}"></span></p>
+
+    <p>
+      <strong>장르:</strong>
+      <span th:each="g, stat : ${anime.genres}">
+        <span th:text="${g.name}"></span>
+        <span th:if="${!stat.last}">, </span>
+      </span>
+    </p>
+
+    <p>
+      <strong>테마:</strong>
+      <span th:each="t, stat : ${anime.themes}">
+        <span th:text="${t.name}"></span>
+        <span th:if="${!stat.last}">, </span>
+      </span>
+    </p>
+
+    <p>
+      <strong>독자층:</strong>
+      <span th:each="d, stat : ${anime.demographics}">
+        <span th:text="${d.name}"></span>
+        <span th:if="${!stat.last}">, </span>
+      </span>
+    </p>
+
+    <p><strong>줄거리:</strong></p>
+    <p
+      th:text="${anime.synopsis != null ? anime.synopsis : '줄거리 정보 없음'}"
+    ></p>
+
+    <a href="javascript:history.back()">뒤로가기</a>
+  </body>
+</html>
