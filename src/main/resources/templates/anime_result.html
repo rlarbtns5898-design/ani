@@ -36,7 +36,22 @@
     <div>
       <!-- 맨 앞 1페이지 -->
       <span th:if="${startPage > 1}">
-        <a th:href="@{/anime/search(${param}, page=1)}">1</a>
+        <a
+          th:href="@{/anime/search(
+          keyword=${condition.keyword},
+          type=${condition.type},
+          status=${condition.status},
+          rating=${condition.rating},
+          minScore=${condition.minScore},
+          startDate=${condition.startDate},
+          endDate=${condition.endDate},
+          orderBy=${condition.orderBy},
+          sort=${condition.sort},
+          genres=${condition.genres},
+          page=${i}
+      )}"
+          >1</a
+        >
 
         <span th:if="${startPage > 2}"> ... </span>
       </span>
@@ -45,14 +60,24 @@
       <span th:each="i : ${#numbers.sequence(startPage, endPage)}">
         <a
           th:if="${i != currentPage}"
-          th:href="@{/anime/search(${param}, page=${i})}"
+          th:href="@{/anime/search(
+            keyword=${condition.keyword},
+            type=${condition.type},
+            status=${condition.status},
+            rating=${condition.rating},
+            minScore=${condition.minScore},
+            startDate=${condition.startDate},
+            endDate=${condition.endDate},
+            orderBy=${condition.orderBy},
+            sort=${condition.sort},
+            genres=${condition.genres},
+            page=${i}
+        )}"
           th:text="${i}"
         >
         </a>
 
-        <strong th:if="${i == currentPage}" th:text="${i}"> </strong>
-
-        &nbsp;
+        <strong th:if="${i == currentPage}" th:text="${i}"></strong>
       </span>
 
       <!-- 마지막 페이지 -->
@@ -60,7 +85,19 @@
         <span th:if="${endPage < lastPage - 1}"> ... </span>
 
         <a
-          th:href="@{/anime/search(${param}, page=${lastPage})}"
+          th:href="@{/anime/search(
+          keyword=${condition.keyword},
+          type=${condition.type},
+          status=${condition.status},
+          rating=${condition.rating},
+          minScore=${condition.minScore},
+          startDate=${condition.startDate},
+          endDate=${condition.endDate},
+          orderBy=${condition.orderBy},
+          sort=${condition.sort},
+          genres=${condition.genres},
+          page=${lastPage}
+      )}"
           th:text="${lastPage}"
         >
         </a>

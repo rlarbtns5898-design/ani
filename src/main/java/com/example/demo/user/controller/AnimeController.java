@@ -53,12 +53,6 @@ public class AnimeController {
         if (condition.getGenres() != null)
             allGenres.addAll(condition.getGenres());
 
-        if (condition.getThemes() != null)
-            allGenres.addAll(condition.getThemes());
-
-        if (condition.getDemographics() != null)
-            allGenres.addAll(condition.getDemographics());
-
         if (!allGenres.isEmpty())
             builder.queryParam("genres", String.join(",", allGenres));
 
@@ -76,7 +70,6 @@ public class AnimeController {
         Map response = restTemplate.getForObject(url, Map.class);
 
         Map pagination = (Map) response.get("pagination");
-
         Number lastPageNumber = (Number) pagination.get("last_visible_page");
         int lastPage = lastPageNumber.intValue();
 
@@ -113,7 +106,7 @@ public class AnimeController {
         RestTemplate restTemplate = new RestTemplate();
         Map response = restTemplate.getForObject(url, Map.class);
 
-        model.addAttribute("anime", response.get("data"));
+        model.addAttribute("anime", response.get("data"));  
 
         return "anime_detail";
     }
