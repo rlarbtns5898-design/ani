@@ -32,5 +32,39 @@
     </div>
 
     <a href="/home">메인으로</a>
+
+    <div>
+      <!-- 맨 앞 1페이지 -->
+      <span th:if="${startPage > 1}">
+        <a th:href="@{/anime/search(${param}, page=1)}">1</a>
+
+        <span th:if="${startPage > 2}"> ... </span>
+      </span>
+
+      <!-- 현재 기준 5개 -->
+      <span th:each="i : ${#numbers.sequence(startPage, endPage)}">
+        <a
+          th:if="${i != currentPage}"
+          th:href="@{/anime/search(${param}, page=${i})}"
+          th:text="${i}"
+        >
+        </a>
+
+        <strong th:if="${i == currentPage}" th:text="${i}"> </strong>
+
+        &nbsp;
+      </span>
+
+      <!-- 마지막 페이지 -->
+      <span th:if="${endPage < lastPage}">
+        <span th:if="${endPage < lastPage - 1}"> ... </span>
+
+        <a
+          th:href="@{/anime/search(${param}, page=${lastPage})}"
+          th:text="${lastPage}"
+        >
+        </a>
+      </span>
+    </div>
   </body>
 </html>
