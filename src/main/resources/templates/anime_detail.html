@@ -50,6 +50,28 @@
       th:text="${anime.synopsis != null ? anime.synopsis : '줄거리 정보 없음'}"
     ></p>
 
+    <div th:if="${alreadyAdded}">
+      <p style="color: green">✔ 이미 내 리스트에 추가된 애니입니다.</p>
+    </div>
+
+    <form th:if="${!alreadyAdded}" th:action="@{/mylist/add}" method="post">
+      <input type="hidden" name="animeId" th:value="${anime.mal_id}" />
+      <input type="hidden" name="title" th:value="${anime.title}" />
+      <input
+        type="hidden"
+        name="imageUrl"
+        th:value="${anime.images.jpg.image_url}"
+      />
+
+      <input
+        type="hidden"
+        th:name="${_csrf.parameterName}"
+        th:value="${_csrf.token}"
+      />
+
+      <button type="submit">내 리스트에 추가</button>
+    </form>
+
     <a href="javascript:history.back()">뒤로가기</a>
   </body>
 </html>

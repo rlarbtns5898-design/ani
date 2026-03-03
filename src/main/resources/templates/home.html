@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <title>메인 메뉴</title>
-</head>
-<body>
+  <head>
+    <title>메인 메뉴</title>
+  </head>
+  <body>
+    <h1>메인 메뉴</h1>
 
-<h1>메인 메뉴</h1>
+    <ul>
+      <li><a href="/board">게시판</a></li>
+      <li><a href="/mypage">마이페이지</a></li>
+      <li><a href="/anime">애니메이션검색</a></li>
+    </ul>
 
-<ul>
-  <li><a href="/board">게시판</a></li>
-  <li><a href="/mypage">마이페이지</a></li>
-  <li><a href="/anime">애니메이션검색</a></li>
-
-
-
-</ul>
-
-<a href="/logout">로그아웃</a>
-
-</body>
+    <form th:action="@{/logout}" method="post" style="display: inline">
+      <input
+        type="hidden"
+        th:name="${_csrf.parameterName}"
+        th:value="${_csrf.token}"
+      />
+      <button type="submit">로그아웃</button>
+    </form>
+  </body>
 </html>

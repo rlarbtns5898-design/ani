@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>마이페이지</title>
+  </head>
+  <body>
+    <h1>마이페이지</h1>
+
+    <h2>내 애니 리스트</h2>
+
+    <div th:if="${#lists.isEmpty(myList)}">
+      <p>아직 추가한 애니가 없습니다.</p>
+    </div>
+
+    <div th:each="anime, stat : ${myList}">
+      <div
+        style="
+          margin-bottom: 20px;
+          border-bottom: 1px solid #ccc;
+          padding: 10px;
+        "
+      >
+        <p>
+          <span th:text="${stat.count} + '. '"></span>
+
+          <a th:href="@{/anime/{id}(id=${anime.animeId})}">
+            <span th:text="${anime.title}"></span>
+          </a>
+        </p>
+
+        <a th:href="@{/anime/{id}(id=${anime.animeId})}">
+          <img th:src="${anime.imageUrl}" width="120" />
+        </a>
+        <form
+          th:action="@{/mylist/delete}"
+          method="post"
+          style="margin-top: 10px"
+        >
+          <input type="hidden" name="animeId" th:value="${anime.animeId}" />
+
+          <input
+            type="hidden"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}"
+          />
+
+          <button type="submit">리스트에서 제거</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
