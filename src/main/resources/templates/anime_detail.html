@@ -14,50 +14,6 @@
 
 <!-- 에피소드 null 체크 -->
 <p>
-  <strong>에피소드:</strong>
-  <span th:if="${anime.episodes != null}" th:text="${anime.episodes}"></span>
-  <span th:unless="${anime.episodes != null}">정보 없음</span>
-</p>
-
-<p>
-  <strong>방영:</strong>
-  <span th:text="${anime.status ?: '정보 없음'}"></span>
-</p>
-
-<p>
-  <strong>평점:</strong>
-  <span th:if="${anime.score != null}" th:text="${anime.score}"></span>
-  <span th:unless="${anime.score != null}">정보 없음</span>
-</p>
-
-<!-- 컬렉션 null 체크 및 반복 -->
-<p>
-  <strong>장르:</strong>
-  <span th:if="${anime.genres != null}" th:each="g, stat : ${anime.genres}">
-        <span th:text="${g.name}"></span><span th:if="${!stat.last}">, </span>
-      </span>
-  <span th:if="${anime.genres == null}">정보 없음</span>
-</p>
-
-<p>
-  <strong>테마:</strong>
-  <span th:if="${anime.themes != null}" th:each="t, stat : ${anime.themes}">
-        <span th:text="${t.name}"></span><span th:if="${!stat.last}">, </span>
-      </span>
-  <span th:if="${anime.themes == null}">정보 없음</span>
-</p>
-
-<p>
-  <strong>독자층:</strong>
-  <span th:if="${anime.demographics != null}" th:each="d, stat : ${anime.demographics}">
-        <span th:text="${d.name}"></span><span th:if="${!stat.last}">, </span>
-      </span>
-  <span th:if="${anime.demographics == null}">정보 없음</span>
-</p>
-
-<p><strong>줄거리:</strong></p>
-<p th:if="${anime.synopsis != null}" th:text="${anime.synopsis}"></p>
-<p th:unless="${anime.synopsis != null}">줄거리 정보 없음</p>
 
 <!-- 평점 등록 폼 -->
 <form th:action="@{/mylist/add}" method="post">
