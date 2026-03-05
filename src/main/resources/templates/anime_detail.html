@@ -6,7 +6,7 @@
   <body>
     <h1 th:text="${anime.title}"></h1>
 
-    <img th:src="${anime.images.jpg.image_url}" width="200" />
+    <img th:src="${anime.images.jpg.imageUrl}" width="200" />
 
     <p><strong>타입:</strong> <span th:text="${anime.type}"></span></p>
 
@@ -82,7 +82,7 @@
       <input
         type="hidden"
         name="imageUrl"
-        th:value="${anime.images.jpg.image_url}"
+        th:value="${anime.images.jpg.imageUrl}"
       />
 
       <input

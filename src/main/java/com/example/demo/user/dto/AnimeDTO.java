@@ -13,4 +13,6 @@ public class AnimeDTO {
     private Double score;
     private String type;
     private AiredDTO aired;
+
+    private ImagesDTO images;
 }
