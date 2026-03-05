@@ -5,7 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AiredDTO {
-    private String from;
-    private String to;
+public class AnimeResponseDTO {
+    private AnimeDTO data;
 }

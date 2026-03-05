@@ -1,5 +1,7 @@
 package com.example.demo.user.controller;
 
+import com.example.demo.user.dto.AnimeDTO;
+import com.example.demo.user.dto.AnimeResponseDTO;
 import com.example.demo.user.dto.AnimeSearchCondition;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.AnimeListRepository;
@@ -7,6 +9,7 @@ import com.example.demo.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -76,8 +79,10 @@ public class AnimeController {
         builder.queryParam("page", page);
 
         String url = builder.toUriString();
-
-        RestTemplate restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(5000);
+        RestTemplate restTemplate = new RestTemplate(factory);
         Map response = restTemplate.getForObject(url, Map.class);
 
         Map pagination = (Map) response.get("pagination");
@@ -109,15 +114,19 @@ public class AnimeController {
         return "anime_result";
     }
 
-        @GetMapping("/anime/{id}")
+@GetMapping("/anime/{id}")
 public String animeDetail(@PathVariable Long id, Model model) {
 
     String url = "https://api.jikan.moe/v4/anime/" + id;
 
     RestTemplate restTemplate = new RestTemplate();
-    Map response = restTemplate.getForObject(url, Map.class);
 
-    model.addAttribute("anime", response.get("data"));
+    AnimeResponseDTO response =
+            restTemplate.getForObject(url, AnimeResponseDTO.class);
+
+    AnimeDTO anime = response.getData();
+
+    model.addAttribute("anime", anime);
 
     boolean alreadyAdded = false;
 
@@ -125,8 +134,8 @@ public String animeDetail(@PathVariable Long id, Model model) {
             SecurityContextHolder.getContext().getAuthentication();
 
     if (auth != null &&
-        auth.isAuthenticated() &&
-        !auth.getName().equals("anonymousUser")) {
+            auth.isAuthenticated() &&
+            !auth.getName().equals("anonymousUser")) {
 
         String username = auth.getName();
 
@@ -136,7 +145,7 @@ public String animeDetail(@PathVariable Long id, Model model) {
 
         if (user != null) {
             alreadyAdded =
-                animeListRepository.existsByUserAndAnimeId(user, id);
+                    animeListRepository.existsByUserAndAnimeId(user, id);
         }
     }
 
