@@ -4,21 +4,33 @@
   <title>상세 정보</title>
 </head>
 <body>
-<h1 th:text="${anime.title}">제목 없음</h1>
+<h1 th:text="${anime.title ?: '제목 없음'}">제목 없음</h1>
 
-<img th:src="${anime.images?.jpg?.imageUrl}" width="200" alt="이미지 없음" />
+<!-- 이미지 null 안전하게 처리 -->
+<img th:if="${anime.images?.jpg?.imageUrl != null}" th:src="${anime.images.jpg.imageUrl}" width="200" alt="이미지 없음" />
+<p th:if="${anime.images?.jpg?.imageUrl == null}">이미지 없음</p>
 
 <p><strong>타입:</strong> <span th:text="${anime.type ?: '정보 없음'}"></span></p>
 
+<!-- 에피소드 null 체크 -->
 <p>
   <strong>에피소드:</strong>
-  <span th:text="${anime.episodes ?: '정보 없음'}"></span>
+  <span th:if="${anime.episodes != null}" th:text="${anime.episodes}"></span>
+  <span th:unless="${anime.episodes != null}">정보 없음</span>
 </p>
 
-<p><strong>방영:</strong> <span th:text="${anime.status ?: '정보 없음'}"></span></p>
+<p>
+  <strong>방영:</strong>
+  <span th:text="${anime.status ?: '정보 없음'}"></span>
+</p>
 
-<p><strong>평점:</strong> <span th:text="${anime.score ?: '정보 없음'}"></span></p>
+<p>
+  <strong>평점:</strong>
+  <span th:if="${anime.score != null}" th:text="${anime.score}"></span>
+  <span th:unless="${anime.score != null}">정보 없음</span>
+</p>
 
+<!-- 컬렉션 null 체크 및 반복 -->
 <p>
   <strong>장르:</strong>
   <span th:if="${anime.genres != null}" th:each="g, stat : ${anime.genres}">
@@ -44,24 +56,28 @@
 </p>
 
 <p><strong>줄거리:</strong></p>
-<p th:text="${anime.synopsis ?: '줄거리 정보 없음'}"></p>
+<p th:if="${anime.synopsis != null}" th:text="${anime.synopsis}"></p>
+<p th:unless="${anime.synopsis != null}">줄거리 정보 없음</p>
 
+<!-- 평점 등록 폼 -->
 <form th:action="@{/mylist/add}" method="post">
   <input type="hidden" name="malId" th:value="${anime.malId}" />
+
   <label>평점 (1~10)</label>
   <select name="score">
     <option th:each="i : ${#numbers.sequence(1,10)}" th:value="${i}" th:text="${i}"></option>
   </select>
 
   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
   <button type="submit">평점 등록</button>
 </form>
 
+<!-- 이미 리스트에 추가된 경우 -->
 <div th:if="${alreadyAdded}">
   <p style="color: green">✔ 이미 내 리스트에 추가된 애니입니다.</p>
 </div>
 
+<!-- 리스트에 추가 가능 -->
 <form th:if="${!alreadyAdded}" th:action="@{/mylist/add}" method="post">
   <input type="hidden" name="animeId" th:value="${anime.malId}" />
   <input type="hidden" name="title" th:value="${anime.title}" />
