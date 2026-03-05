@@ -13,10 +13,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void register(String username, String password) {
+    public void register(String username, String password, Integer age, String gender) {
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
+                .age(age)
+                .gender(gender)
                 .build();
 
         userRepository.save(user);

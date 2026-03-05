@@ -43,6 +43,7 @@ public class AnimeService {
                             LocalDate.parse(dto.getAired().getFrom().substring(0, 10));
 
                     Anime anime = new Anime();
+                    anime.setMalId(dto.getMalId());
                     anime.setTitle(dto.getTitle());
                     anime.setScore(dto.getScore());
                     anime.setStartDate(airedDate);

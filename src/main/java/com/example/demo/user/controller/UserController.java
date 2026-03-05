@@ -29,9 +29,11 @@ public class UserController {
 
     @PostMapping("/register")
     public String register(@RequestParam String username,
-                           @RequestParam String password) {
+                           @RequestParam String password,
+                           @RequestParam Integer age,
+                           @RequestParam String gender) {
 
-        userService.register(username, password);
+        userService.register(username, password,age,gender);
         return "redirect:/login";
     }
 

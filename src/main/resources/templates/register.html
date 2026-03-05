@@ -7,9 +7,29 @@
 <h2>회원가입</h2>
 
 <form th:action="@{/register}" method="post">
-  <input type="text" name="username" placeholder="아이디" required/>
-  <input type="password" name="password" placeholder="비밀번호" required/>
-  <button type="submit">가입하기</button>
+  <div>
+    <input type="text" name="username" placeholder="아이디" required/>
+  </div>
+
+  <div>
+    <input type="password" name="password" placeholder="비밀번호" required/>
+  </div>
+
+  <div>
+    <input type="number" name="age" placeholder="나이" required/>
+  </div>
+
+  <div>
+    <select name="gender" required>
+      <option value="">성별 선택</option>
+      <option value="MALE">남자</option>
+      <option value="FEMALE">여자</option>
+    </select>
+  </div>
+
+  <div>
+    <button type="submit">가입하기</button>
+  </div>
 </form>
 
 <a href="/login">로그인으로</a>

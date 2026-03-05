@@ -10,12 +10,15 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Builder
 public class Anime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
+
+    @Column(unique = true)
+    private Integer malId;
 
     private String title;
 

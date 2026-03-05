@@ -9,19 +9,20 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users")
-public class User {
+@Table(name = "user_anime_rating")
+public class UserAnimeRating {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private String username;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private String password;
+    @ManyToOne
+    @JoinColumn(name = "anime_id")
+    private Anime anime;
 
-    private Integer age;
-
-    private String gender;
+    private Integer score;
 }
