@@ -23,7 +23,12 @@ public class RatingService {
                 .orElseThrow();
 
         Anime anime = animeRepository.findByMalId(malId)
-                .orElseThrow();
+                .orElseGet(() -> {
+                    Anime newAnime = Anime.builder()
+                            .malId(malId)
+                            .build();
+                    return animeRepository.save(newAnime);
+                });
 
         UserAnimeRating rating = UserAnimeRating.builder()
                 .user(user)
