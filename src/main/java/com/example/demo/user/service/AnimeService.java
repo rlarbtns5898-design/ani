@@ -18,10 +18,10 @@ public class AnimeService {
 
     public void saveRecentAnime() {
 
-        for (int page = 1; page <= 50; page++) {
+        for (int page = 1; page <= 5000; page++) {
 
             String url =
-                    "https://api.jikan.moe/v4/anime?start_date=2019-01-01&page=" + page;
+                    "https://api.jikan.moe/v4/anime?start_date=2005-01-01&page=" + page;
 
             RestTemplate restTemplate = new RestTemplate();
             JikanResponseDTO response =

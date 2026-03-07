@@ -20,21 +20,24 @@ public class RatingService {
     public void rateAnime(String username, Integer malId, Integer score) {
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Anime anime = animeRepository.findByMalId(malId)
-                .orElseGet(() -> {
-                    Anime newAnime = Anime.builder()
-                            .malId(malId)
-                            .build();
-                    return animeRepository.save(newAnime);
-                });
+                .orElseThrow(() -> new RuntimeException("Anime not found"));
 
-        UserAnimeRating rating = UserAnimeRating.builder()
-                .user(user)
-                .anime(anime)
-                .score(score)
-                .build();
+        UserAnimeRating rating = ratingRepository
+                .findByUserAndAnime(user, anime)
+                .orElse(null);
+
+        if (rating == null) {
+            rating = UserAnimeRating.builder()
+                    .user(user)
+                    .anime(anime)
+                    .score(score)
+                    .build();
+        } else {
+            rating.setScore(score);
+        }
 
         ratingRepository.save(rating);
     }

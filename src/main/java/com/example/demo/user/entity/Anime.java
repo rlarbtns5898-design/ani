@@ -15,9 +15,9 @@ public class Anime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
-    @Column(unique = true)
+    @Column(name="mal_id",unique = true)
     private Integer malId;
 
     private String title;
