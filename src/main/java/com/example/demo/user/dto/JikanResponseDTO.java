@@ -9,4 +9,13 @@ import java.util.List;
 @Setter
 public class JikanResponseDTO {
     private List<AnimeDTO> data;
+    private PaginationDTO pagination;
+
+    public List<AnimeDTO> getData() {
+        return data;
+    }
+
+    public PaginationDTO getPagination() {
+        return pagination;
+    }
 }

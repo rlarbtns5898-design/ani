@@ -1,5 +1,7 @@
 package com.example.demo.user.dto;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +14,14 @@ public class AnimeDTO {
     private String title;
     private Double score;
     private String type;
+    private String rating;
     private AiredDTO aired;
 
     private ImagesDTO images;
+
+    private List<GenreDTO> genres;
+
+    private List<GenreDTO> themes;
+
+    private List<GenreDTO> demographics;
 }

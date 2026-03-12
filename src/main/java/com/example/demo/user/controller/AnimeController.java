@@ -3,15 +3,14 @@ package com.example.demo.user.controller;
 import com.example.demo.user.dto.AnimeDTO;
 import com.example.demo.user.dto.AnimeResponseDTO;
 import com.example.demo.user.dto.AnimeSearchCondition;
-import com.example.demo.user.entity.User;
-import com.example.demo.user.repository.AnimeListRepository;
-import com.example.demo.user.repository.UserRepository;
+import com.example.demo.user.entity.AnimeRating;
 
+import com.example.demo.user.repository.UserRepository;
+import com.example.demo.user.repository.AnimeRatingRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +21,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
 public class AnimeController {
-    private final AnimeListRepository animeListRepository;
-    private final UserRepository userRepository;
+    private final AnimeRatingRepository ratingRepository;
 
     @GetMapping("/anime")
     public String animeSearchPage() {
@@ -126,30 +125,10 @@ public String animeDetail(@PathVariable Long id, Model model) {
 
     AnimeDTO anime = response.getData();
 
+    Optional<AnimeRating> rating = ratingRepository.findByMalId(id);
+
     model.addAttribute("anime", anime);
-
-    boolean alreadyAdded = false;
-
-    Authentication auth =
-            SecurityContextHolder.getContext().getAuthentication();
-
-    if (auth != null &&
-            auth.isAuthenticated() &&
-            !auth.getName().equals("anonymousUser")) {
-
-        String username = auth.getName();
-
-        User user = userRepository
-                .findByUsername(username)
-                .orElse(null);
-
-        if (user != null) {
-            alreadyAdded =
-                    animeListRepository.existsByUserAndAnimeId(user, id);
-        }
-    }
-
-    model.addAttribute("alreadyAdded", alreadyAdded);
+    model.addAttribute("rating", rating.orElse(null));
 
     return "anime_detail";
 }

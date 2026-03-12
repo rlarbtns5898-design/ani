@@ -22,8 +22,22 @@ public class Anime {
 
     private String title;
 
-    private Double score;
+    private String imageUrl;
+
+    private String type;
 
     private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    private String rating;
+
+    private Double score;
+
+    private String genres;
+
+    private String themes;
+
+    private String demographics;
 
 }
