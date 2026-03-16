@@ -20,6 +20,45 @@
       <span th:text="${anime.type ?: '정보 없음'}"></span>
     </p>
 
+    <p>
+      <strong>방영 여부:</strong>
+      <span th:text="${anime.status ?: '정보 없음'}"></span>
+    </p>
+
+    <p>
+      <strong>시청 연령:</strong>
+      <span th:text="${anime.rating ?: '정보 없음'}"></span>
+    </p>
+
+    <p>
+      <strong>평점:</strong>
+      <span th:text="${anime.score ?: '정보 없음'}"></span>
+    </p>
+
+    <p>
+      <strong>장르:</strong>
+      <span
+        th:each="g, stat : ${anime.genres}"
+        th:text="${g.name + (stat.last ? '' : ', ')}"
+      ></span>
+    </p>
+
+    <p>
+      <strong>테마:</strong>
+      <span
+        th:each="t, stat : ${anime.themes}"
+        th:text="${t.name + (stat.last ? '' : ', ')}"
+      ></span>
+    </p>
+
+    <p>
+      <strong>독자층:</strong>
+      <span
+        th:each="d, stat : ${anime.demographics}"
+        th:text="${d.name + (stat.last ? '' : ', ')}"
+      ></span>
+    </p>
+
     <!-- 에피소드 null 체크 -->
     <p>
       <!-- 평점 등록 폼 -->
