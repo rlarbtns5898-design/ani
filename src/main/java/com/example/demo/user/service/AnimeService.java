@@ -9,6 +9,7 @@ import com.example.demo.user.repository.AnimeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -39,122 +40,153 @@ public class AnimeService {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public void saveAnime() {
+    @Async
+public void fetchAllAnime() {
 
-        if (!running.compareAndSet(false, true)) {
-            log.info("Crawler already running");
-            return;
-        }
+    if (!running.compareAndSet(false, true)) {
+        log.info("이미 실행 중");
+        return;
+    }
 
-        try {
+    try {
 
-            List<Anime> batch = new ArrayList<>();
+        Set<Long> existingIds =
+                new HashSet<>(animeRepository.findAllMalIds());
 
-            Set<Long> existingIds =
-                    new HashSet<>(animeRepository.findAllMalIds());
+        int start = 1;
+        int chunkSize = 50;
 
-            for (int page = 1; ; page++) {
+        while (true) {
 
-                String url =
-                        "https://api.jikan.moe/v4/anime?start_date=2005-01-01&order_by=start_date&sort=asc&page=" + page;
+            int end = start + chunkSize - 1;
 
-                log.info("Fetching page {}", page);
+            log.info("Batch start: {} ~ {}", start, end);
 
-                JikanResponseDTO response;
+            boolean hasNext = saveAnimeChunk(start, end, existingIds);
 
-                try {
-                    response = restTemplate.getForObject(url, JikanResponseDTO.class);
-                }
-                catch (HttpClientErrorException.TooManyRequests e) {
-                    log.warn("Rate limit hit. retrying...");
-                    sleep(4000);
-                    page--;
-                    continue;
-                }
-                catch (Exception e) {
-                    log.error("API request failed", e);
-                    sleep(2000);
-                    page--;
-                    continue;
-                }
-
-                if (response == null || response.getData() == null)
-                    continue;
-
-                for (AnimeDTO dto : response.getData()) {
-
-                    if (dto.getType() == null) continue;
-                    if (dto.getScore() == null) continue;
-
-                    Long malId = dto.getMalId().longValue();
-
-                    if (existingIds.contains(malId))
-                        continue;
-
-                    String type = dto.getType().toLowerCase();
-
-                    if (!(type.equals("tv") ||
-                            type.equals("movie") ||
-                            type.equals("ova")))
-                        continue;
-
-                    if (isAdultGenre(dto))
-                        continue;
-
-                    Anime anime = new Anime();
-
-                    anime.setMalId(dto.getMalId());
-                    anime.setTitle(dto.getTitle());
-                    anime.setType(dto.getType());
-                    anime.setScore(dto.getScore());
-
-                    if (dto.getImages() != null &&
-                            dto.getImages().getJpg() != null) {
-
-                        anime.setImageUrl(
-                                dto.getImages().getJpg().getImageUrl()
-                        );
-                    }
-
-                    if (dto.getAired() != null) {
-
-                        anime.setStartDate(
-                                parseDate(dto.getAired().getFrom())
-                        );
-
-                        anime.setEndDate(
-                                parseDate(dto.getAired().getTo())
-                        );
-                    }
-
-                    anime.setRating(dto.getRating());
-
-                    anime.setGenres(joinNames(dto.getGenres()));
-                    anime.setThemes(joinNames(dto.getThemes()));
-                    anime.setDemographics(joinNames(dto.getDemographics()));
-
-                    batch.add(anime);
-                    existingIds.add(malId);
-
-                    if (batch.size() == 50) {
-                        saveBatch(batch);
-                    }
-                }
-
-                if (response.getPagination() != null &&
-                        !response.getPagination().isHasNextPage())
-                    break;
-
-                sleep(1500);
+            if (!hasNext) {
+                log.info("크롤링 완료");
+                break;
             }
 
-            if (!batch.isEmpty())
-                saveBatch(batch);
+            start += chunkSize;
 
-        } finally {
-            running.set(false);
+            sleep(2000);
         }
+
+    } finally {
+        running.set(false);
     }
+}
+
+public boolean saveAnimeChunk(int startPage, int endPage, Set<Long> existingIds) {
+
+    List<Anime> batch = new ArrayList<>();
+
+    boolean hasNextPage = true;
+
+    for (int page = startPage; page <= endPage; page++) {
+
+        String url =
+                "https://api.jikan.moe/v4/anime?start_date=2005-01-01&order_by=start_date&sort=asc&page=" + page;
+
+        log.info("Fetching page {}", page);
+
+        JikanResponseDTO response;
+
+        try {
+            response = restTemplate.getForObject(url, JikanResponseDTO.class);
+        }
+        catch (HttpClientErrorException.TooManyRequests e) {
+            sleep(4000);
+            page--;
+            continue;
+        }
+        catch (Exception e) {
+            sleep(2000);
+            page--;
+            continue;
+        }
+
+        if (response == null || response.getData() == null)
+            continue;
+
+        for (AnimeDTO dto : response.getData()) {
+
+            if (dto.getType() == null) continue;
+            if (dto.getScore() == null) continue;
+
+            Long malId = dto.getMalId().longValue();
+
+            if (existingIds.contains(malId))
+                continue;
+
+            String type = dto.getType().toLowerCase();
+
+            if (!(type.equals("tv") ||
+                    type.equals("movie") ||
+                    type.equals("ova")))
+                continue;
+
+            if (isAdultGenre(dto))
+                continue;
+
+            Anime anime = new Anime();
+            anime.setMalId(dto.getMalId());
+            anime.setTitle(dto.getTitle());
+            anime.setType(dto.getType());
+            anime.setScore(dto.getScore());
+
+            if (dto.getImages() != null &&
+            dto.getImages().getJpg() != null) {
+
+            anime.setImageUrl(
+                dto.getImages().getJpg().getImageUrl()
+            );
+            }
+
+
+            if (dto.getAired() != null) {
+
+            anime.setStartDate(
+                parseDate(dto.getAired().getFrom())
+            );
+
+            anime.setEndDate(
+                parseDate(dto.getAired().getTo())
+            );
+            }
+
+
+            anime.setGenres(joinNames(dto.getGenres()));
+            anime.setThemes(joinNames(dto.getThemes()));
+            anime.setDemographics(joinNames(dto.getDemographics()));
+
+
+            anime.setRating(dto.getRating());
+
+            batch.add(anime);
+            existingIds.add(malId);
+
+            if (batch.size() == 50) {
+                saveBatch(batch);
+            }
+        }
+
+        if (response.getPagination() != null &&
+                !response.getPagination().isHasNextPage()) {
+            hasNextPage = false;
+            break;
+        }
+
+        sleep(1000);
+    }
+
+    if (!batch.isEmpty())
+        saveBatch(batch);
+
+    return hasNextPage;
+}
 
     private void saveBatch(List<Anime> batch) {
 
@@ -203,20 +235,4 @@ public class AnimeService {
             log.error("Sleep interrupted", e);
         }
     }
-
-    // public Page<Anime> searchAnime(String keyword, int page) {
-
-    //     PageRequest pageable = PageRequest.of(page - 1, 20); // 페이지당 20개
-
-    //     if (keyword == null || keyword.isEmpty()) {
-    //         return animeRepository.findAll(pageable);
-    //     }
-
-    //     return animeRepository.findByTitleContaining(keyword, pageable);
-    // }
-
-    // public Anime findById(Long id) {
-    //     return animeRepository.findById(id)
-    //             .orElseThrow(() -> new RuntimeException("애니 없음"));
-    // }
 }

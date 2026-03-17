@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnimedbController {
     private final AnimeService animeService;
 
-    @GetMapping("/anime/save")
-    public String saveAnime() {
-        animeService.saveAnime();
-        return "저장 완료";
+    @GetMapping("/fetch-all")
+    public String fetchAll() {
+        animeService.fetchAllAnime();
+        return "전체 크롤링 시작됨";
     }
 
 }
