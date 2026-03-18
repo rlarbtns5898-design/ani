@@ -31,8 +31,7 @@ public class AnimeService {
             "Hentai",
             "Erotica",
             "Ecchi",
-            "Boys Love",
-            "Girls Love"
+            "Boys Love"
     );
 
     private final AtomicBoolean running = new AtomicBoolean(false);
