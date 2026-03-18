@@ -5,6 +5,7 @@ import com.example.demo.user.entity.AnimeRating;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.AnimeRatingRepository;
 import com.example.demo.user.repository.UserRepository;
+import com.example.demo.user.security.CustomUserDetails;
 import com.example.demo.user.service.AnimeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -40,15 +41,18 @@ public class OnboardingController {
             Authentication authentication
     ) {
 
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         for (int i = 0; i < malId.size(); i++) {
 
             Long id = malId.get(i);
 
 
-            if (watched == null || !watched.contains(id)) continue;
-            if (score.get(i) == 0) continue;
+            if (watched == null || !watched.contains(String.valueOf(id))) continue;
+
+            Integer userScore = score.get(i);
+            if (userScore == null || userScore == 0) continue;
 
 
             // 이미 있으면 update, 없으면 insert
