@@ -45,23 +45,32 @@ public String myPage(Model model) {
     List<MyPageAnimeDTO> animeList = new ArrayList<>();
 
     for (AnimeRating r : ratings) {
+        try{
+            String url =
+                    "https://api.jikan.moe/v4/anime/" + r.getMalId();
 
-        String url =
-                "https://api.jikan.moe/v4/anime/" + r.getMalId();
+            AnimeResponseDTO response =
+                    restTemplate.getForObject(url, AnimeResponseDTO.class);
 
-        AnimeResponseDTO response =
-                restTemplate.getForObject(url, AnimeResponseDTO.class);
+            AnimeDTO anime = response.getData();
 
-        AnimeDTO anime = response.getData();
+            MyPageAnimeDTO dto = new MyPageAnimeDTO();
 
-        MyPageAnimeDTO dto = new MyPageAnimeDTO();
+            dto.setMalId(r.getMalId());
+            dto.setTitle(anime.getTitle());
+            dto.setImageUrl(anime.getImages().getJpg().getImageUrl());
+            dto.setScore(r.getScore());
 
-        dto.setMalId(r.getMalId());
-        dto.setTitle(anime.getTitle());
-        dto.setImageUrl(anime.getImages().getJpg().getImageUrl());
-        dto.setScore(r.getScore());
+            animeList.add(dto);
+        }catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
 
-        animeList.add(dto);
+            System.out.println("Rate limit 걸림, malId=" + r.getMalId());
+            continue;
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            ;
+        }
     }
 
     model.addAttribute("animeList", animeList);
