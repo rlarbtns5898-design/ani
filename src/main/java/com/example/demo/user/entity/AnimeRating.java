@@ -16,6 +16,9 @@ public class AnimeRating {
 
     private int score;
 
+    private boolean watched;
     @ManyToOne
     private User user;
+
+
 }

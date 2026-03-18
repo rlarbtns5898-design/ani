@@ -15,10 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -40,6 +37,17 @@ public class AnimeService {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
+public List<Anime> getRandomAnime(int count) {
+
+        List<Anime> animeList = animeRepository.findAll();
+        Collections.shuffle(animeList);
+
+        if (animeList.size() <= count) {
+            return animeList;
+        }
+
+        return animeList.subList(0, count);
+}
     @Async
 public void fetchAllAnime() {
 
@@ -77,6 +85,7 @@ public void fetchAllAnime() {
     } finally {
         running.set(false);
     }
+
 }
 
 public boolean saveAnimeChunk(int startPage, int endPage, Set<Long> existingIds) {
