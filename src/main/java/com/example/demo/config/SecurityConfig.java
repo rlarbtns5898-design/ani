@@ -19,7 +19,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/register", "/css/**").permitAll()
-                        .requestMatchers("/onboarding").authenticated()
+                        .requestMatchers("/onboarding","/onboarding/save").authenticated()
                         .requestMatchers("/board/write", "/board/delete/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

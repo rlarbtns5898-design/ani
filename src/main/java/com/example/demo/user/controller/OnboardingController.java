@@ -44,10 +44,12 @@ public class OnboardingController {
 
         for (int i = 0; i < malId.size(); i++) {
 
-            // 체크 안된 애니는 스킵
-            if (watched == null || i >= watched.size()) continue;
-
             Long id = malId.get(i);
+
+
+            if (watched == null || !watched.contains(id)) continue;
+            if (score.get(i) == 0) continue;
+
 
             // 이미 있으면 update, 없으면 insert
             AnimeRating rating = animeRatingRepository
