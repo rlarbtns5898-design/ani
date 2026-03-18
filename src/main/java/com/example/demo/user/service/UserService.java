@@ -19,6 +19,7 @@ public class UserService {
                 .password(passwordEncoder.encode(password))
                 .age(age)
                 .gender(gender)
+                .firstLogin(true)
                 .build();
 
         userRepository.save(user);
