@@ -24,4 +24,7 @@ public class User {
     private Integer age;
 
     private String gender;
+
+    @Column(nullable = false)
+    private boolean firstLogin = true;
 }
