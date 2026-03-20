@@ -10,17 +10,18 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     public void register(String username, String password, Integer age, String gender) {
-        User user = User.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .age(age)
-                .gender(gender)
-                .firstLogin(true)
-                .build();
+
+        String encodedPassword = passwordEncoder.encode(password); // ⭐ 핵심
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(encodedPassword); // ⭐ 암호화 저장
+        user.setAge(age);
+        user.setGender(gender);
 
         userRepository.save(user);
     }
