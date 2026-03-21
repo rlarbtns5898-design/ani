@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // React 주소
+                        .allowedOrigins("https://ani-frontend-ek9a.onrender.com") // React 주소
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true);
