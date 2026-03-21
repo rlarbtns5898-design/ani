@@ -13,40 +13,32 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .cors()
-        .and()
-        .csrf().disable()
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            
+    .cors()
+    .and()
+    .csrf().disable()
+    .authorizeHttpRequests(auth -> auth
+        .requestMatchers("/api/user/register", "/login").permitAll()
+        .anyRequest().authenticated()
+    )
+    .formLogin(form -> form
+        .loginProcessingUrl("/login")
+        .successHandler((request, response, authentication) -> {
+            response.setStatus(200); // ⭐ redirect 막기
+        })
+        .failureHandler((request, response, exception) -> {
+            response.setStatus(401); // ⭐ 실패 시 상태코드
+        })
+    )
+    .logout(logout -> logout
+        .logoutUrl("/logout")
+        .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
+    );    // 로그아웃도 비활성화
 
-        .authorizeHttpRequests(auth -> auth
-            // 인증 없이 허용
-            .requestMatchers(
-                "/api/user/register",
-                "/login",
-                "/logout"
-            ).permitAll()
-
-            // API는 무조건 로그인 필요
-            .requestMatchers("/api/**").authenticated()
-
-            // 나머지는 전부 허용 (React 라우팅 때문)
-            .anyRequest().permitAll()
-        )
-
-        .formLogin(form -> form
-            .loginProcessingUrl("/login")
-            .successHandler((req, res, auth) -> res.setStatus(200))
-            .failureHandler((req, res, e) -> res.setStatus(401))
-        )
-
-        .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
-        );
-
-    return http.build();
-}
+        return http.build();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
