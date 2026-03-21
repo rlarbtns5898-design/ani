@@ -46,4 +46,19 @@ public class BoardService {
 
         boardRepository.delete(board);
     }
+
+    public void update(Long id, String title, String content, String username) {
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+    
+        // 작성자 체크 (중요)
+        if (!board.getUser().getUsername().equals(username)) {
+            throw new RuntimeException("수정 권한 없음");
+        }
+    
+        board.setTitle(title);
+        board.setContent(content);
+    
+        boardRepository.save(board);
+    }
 }

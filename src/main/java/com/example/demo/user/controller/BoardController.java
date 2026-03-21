@@ -1,48 +1,63 @@
 package com.example.demo.user.controller;
 
+import com.example.demo.user.dto.BoardRequest;
 import com.example.demo.user.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/board")
+@RequestMapping("/api/board") // 프론트랑 구분 위해 api 붙이는게 좋음
 public class BoardController {
+
     private final BoardService boardService;
 
+    // 게시글 전체 조회
     @GetMapping("")
-    public String boardPage(Model model){
-        model.addAttribute("boardList",boardService.findAll());
-        return "board";
-    }
-    @GetMapping("/write")
-    public String writePage(){
-        return "board_write";
+    public List<?> boardList() {
+        return boardService.findAll();
     }
 
-    @PostMapping("/write")
-    public String write(@RequestParam String title,
-                        @RequestParam String content,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+    // 게시글 작성
+    @PostMapping("")
+    public void write(@RequestBody BoardRequest request,
+                      @AuthenticationPrincipal UserDetails userDetails) {
 
-        boardService.write(title, content, userDetails.getUsername());
-        return "redirect:/board";
+        boardService.write(
+                request.getTitle(),
+                request.getContent(),
+                userDetails.getUsername()
+        );
     }
 
-    @PostMapping("/delete/{id}")
-    public String delete(@PathVariable Long id,
-                         @AuthenticationPrincipal UserDetails userDetails) {
+    // 게시글 삭제
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id,
+                       @AuthenticationPrincipal UserDetails userDetails) {
 
         boardService.delete(id, userDetails.getUsername());
-        return "redirect:/board";
     }
+
+    // 게시글 상세 조회
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("board", boardService.findById(id));
-        return "board_detail";
+    public Object detail(@PathVariable Long id) {
+        return boardService.findById(id);
     }
+
+    @PutMapping("/{id}")
+public void update(@PathVariable Long id,
+                   @RequestBody BoardRequest request,
+                   @AuthenticationPrincipal UserDetails userDetails) {
+
+    boardService.update(
+            id,
+            request.getTitle(),
+            request.getContent(),
+            userDetails.getUsername()
+    );
+}
 }
