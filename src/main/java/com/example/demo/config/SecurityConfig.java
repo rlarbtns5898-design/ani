@@ -13,32 +13,19 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            
-    .cors()
-    .and()
-    .csrf().disable()
-    .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/user/register", "/login").permitAll()
-        .anyRequest().authenticated()
-    )
-    .formLogin(form -> form
-        .loginProcessingUrl("/login")
-        .successHandler((request, response, authentication) -> {
-            response.setStatus(200); // ⭐ redirect 막기
-        })
-        .failureHandler((request, response, exception) -> {
-            response.setStatus(401); // ⭐ 실패 시 상태코드
-        })
-    )
-    .logout(logout -> logout
-        .logoutUrl("/logout")
-        .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
-    );    // 로그아웃도 비활성화
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .cors()
+        .and()
+        .csrf().disable()
+        .authorizeHttpRequests(auth -> auth
+            .anyRequest().permitAll()
+        )
+        .formLogin().disable()
+        .logout().disable();
 
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {
