@@ -21,6 +21,7 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/user/register", "/login").permitAll()
+                .requestMatchers("/api/anime/**").permitAll()
                 .requestMatchers("/api/**").authenticated() // 🔥 API는 로그인 필요
                 .anyRequest().permitAll()
             )
