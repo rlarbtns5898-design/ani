@@ -15,27 +15,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            
-    .cors()
-    .and()
-    .csrf().disable()
-    .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/user/register", "/login").permitAll()
-        .anyRequest().authenticated()
-    )
-    .formLogin(form -> form
-        .loginProcessingUrl("/login")
-        .successHandler((request, response, authentication) -> {
-            response.setStatus(200); // ⭐ redirect 막기
-        })
-        .failureHandler((request, response, exception) -> {
-            response.setStatus(401); // ⭐ 실패 시 상태코드
-        })
-    )
-    .logout(logout -> logout
-        .logoutUrl("/logout")
-        .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
-    );    // 로그아웃도 비활성화
+            .cors()
+            .and()
+            .csrf().disable()
+
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/user/register", "/login").permitAll()
+                .requestMatchers("/api/**").authenticated() // 🔥 API는 로그인 필요
+                .anyRequest().permitAll()
+            )
+
+            .formLogin(form -> form
+                .loginProcessingUrl("/login") // 🔥 React에서 POST /login
+                .usernameParameter("username") // 기본값이라 생략 가능
+                .passwordParameter("password")
+                .successHandler((req, res, auth) -> {
+                    res.setStatus(200); // 🔥 redirect 막기
+                })
+                .failureHandler((req, res, e) -> {
+                    res.setStatus(401);
+                })
+            )
+
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
+            );
 
         return http.build();
     }

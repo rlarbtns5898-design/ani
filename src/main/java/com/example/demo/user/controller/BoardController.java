@@ -52,7 +52,7 @@ public class BoardController {
     }
 
     @PutMapping("/{id}")
-public void update(@PathVariable Long id,
+    public void update(@PathVariable Long id,
                    @RequestBody BoardRequest request,
                    @AuthenticationPrincipal UserDetails userDetails) {
 
