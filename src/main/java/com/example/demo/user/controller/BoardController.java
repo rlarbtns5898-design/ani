@@ -3,11 +3,13 @@ package com.example.demo.user.controller;
 import com.example.demo.user.dto.BoardRequest;
 import com.example.demo.user.service.BoardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class BoardController {
 
     // 게시글 작성
     @PostMapping("")
-    public void write(@RequestBody BoardRequest request,
+    public ResponseEntity<?> write(@RequestBody BoardRequest request,
                       @AuthenticationPrincipal UserDetails userDetails) {
 
         boardService.write(
@@ -32,6 +34,7 @@ public class BoardController {
                 request.getContent(),
                 userDetails.getUsername()
         );
+        return ResponseEntity.ok(Map.of("message", "작성 완료"));
     }
 
     // 게시글 삭제
