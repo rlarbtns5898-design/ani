@@ -19,7 +19,6 @@ public class CorsConfig {
 
 
                         .allowedOrigins("http://localhost:5173","https://ani-frontend-ek9a.onrender.com") // React 주소
-
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(true);

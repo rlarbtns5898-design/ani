@@ -5,6 +5,7 @@ import com.example.demo.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,9 +16,24 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-public ResponseEntity<?> register(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> register(@RequestBody UserDTO dto) {
 
-    userService.register(dto.getUsername(), dto.getPassword(), dto.getAge(), dto.getGender());
-    return ResponseEntity.ok("회원가입 성공");
+        userService.register(dto.getUsername(), dto.getPassword(), dto.getAge(), dto.getGender());
+        return ResponseEntity.ok("회원가입 성공");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
+
+        return ResponseEntity.ok().body(
+                java.util.Map.of("username", userDetails.getUsername())
+        );
+    }
+
 }
-}
+
+
+
+
+
