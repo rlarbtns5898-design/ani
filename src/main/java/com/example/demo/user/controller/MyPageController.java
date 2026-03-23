@@ -1,7 +1,5 @@
 package com.example.demo.user.controller;
 
-import com.example.demo.user.dto.AnimeDTO;
-import com.example.demo.user.dto.AnimeResponseDTO;
 import com.example.demo.user.dto.MyPageAnimeDTO;
 import com.example.demo.user.entity.AnimeRating;
 import com.example.demo.user.entity.User;
@@ -11,70 +9,77 @@ import com.example.demo.user.repository.AnimeRatingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-@Controller
+@RestController // 🔥 변경
 @RequiredArgsConstructor
 public class MyPageController {
 
     private final UserRepository userRepository;
     private final AnimeRatingRepository ratingRepository;
 
-@GetMapping("/mypage")
-public String myPage(Model model) {
+    @GetMapping("/api/mypage") // 🔥 API 경로로 변경
+    public List<MyPageAnimeDTO> myPage() {
 
-    Authentication auth =
-            SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-    String username = auth.getName();
+        String username = auth.getName();
 
-    User user = userRepository
-            .findByUsername(username)
-            .orElse(null);
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-    List<AnimeRating> ratings = ratingRepository.findByUser(user);
+        List<AnimeRating> ratings = ratingRepository.findByUser(user);
 
-    RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
 
-    List<MyPageAnimeDTO> animeList = new ArrayList<>();
+        List<MyPageAnimeDTO> animeList = new ArrayList<>();
 
-    for (AnimeRating r : ratings) {
-        try{
-            String url =
-                    "https://api.jikan.moe/v4/anime/" + r.getMalId();
+        for (AnimeRating r : ratings) {
+            try {
+                String url =
+                        "https://api.jikan.moe/v4/anime/" + r.getMalId();
 
-            AnimeResponseDTO response =
-                    restTemplate.getForObject(url, AnimeResponseDTO.class);
+                Map response =
+                        restTemplate.getForObject(url, Map.class);
 
-            AnimeDTO anime = response.getData();
+                if (response == null || response.get("data") == null)
+                    continue;
 
-            MyPageAnimeDTO dto = new MyPageAnimeDTO();
+                Map data = (Map) response.get("data");
 
-            dto.setMalId(r.getMalId());
-            dto.setTitle(anime.getTitle());
-            dto.setImageUrl(anime.getImages().getJpg().getImageUrl());
-            dto.setScore(r.getScore());
+                MyPageAnimeDTO dto = new MyPageAnimeDTO();
 
-            animeList.add(dto);
-        }catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
+                dto.setMalId(r.getMalId());
+                dto.setTitle((String) data.get("title"));
 
-            System.out.println("Rate limit 걸림, malId=" + r.getMalId());
-            continue;
-        } catch (Exception e) {
+                Map images = (Map) data.get("images");
+                Map jpg = (Map) images.get("jpg");
 
-            e.printStackTrace();
-            ;
+                dto.setImageUrl((String) jpg.get("image_url"));
+
+                dto.setScore(r.getScore());
+
+                animeList.add(dto);
+
+            } catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
+
+                System.out.println("Rate limit 걸림, malId=" + r.getMalId());
+                break; // 🔥 계속 돌지 말고 중단
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
+        return animeList;
     }
-
-    model.addAttribute("animeList", animeList);
-
-    return "mypage";
-}
 }

@@ -2,18 +2,22 @@ package com.example.demo.user.controller;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.demo.user.entity.AnimeRating;
 import com.example.demo.user.repository.AnimeRatingRepository;
 import com.example.demo.user.repository.UserRepository;
 import com.example.demo.user.entity.User;
-@Controller
+
+@RestController
 @RequiredArgsConstructor
 public class RatingController {
 
@@ -21,35 +25,41 @@ public class RatingController {
     private final UserRepository userRepository;
 
     @PostMapping("/rate")
-    public String rateAnime(@RequestParam Long malId,
-                        @RequestParam int score) {
+    public ResponseEntity<?> rateAnime(@RequestBody Map<String, Object> body) {
 
-    Authentication auth =
-            SecurityContextHolder.getContext().getAuthentication();
+        Long malId = Long.valueOf(body.get("malId").toString());
+        int score = Integer.parseInt(body.get("score").toString());
 
-    String username = auth.getName();
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-    User user = userRepository
-            .findByUsername(username)
-            .orElse(null);
+        String username = auth.getName();
 
-    Optional<AnimeRating> optionalRating =
-            ratingRepository.findByUserAndMalId(user, malId);
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-    AnimeRating rating;
+        Optional<AnimeRating> optionalRating =
+                ratingRepository.findByUserAndMalId(user, malId);
 
-    if(optionalRating.isPresent()) {
-        rating = optionalRating.get();
-        rating.setScore(score);
-    } else {
-        rating = new AnimeRating();
-        rating.setUser(user);
-        rating.setMalId(malId);
-        rating.setScore(score);
+        AnimeRating rating;
+
+        if (optionalRating.isPresent()) {
+            rating = optionalRating.get();
+            rating.setScore(score);
+        } else {
+            rating = new AnimeRating();
+            rating.setUser(user);
+            rating.setMalId(malId);
+            rating.setScore(score);
+        }
+
+        ratingRepository.save(rating);
+
+        // 🔥 JSON 응답
+        return ResponseEntity.ok(Map.of(
+                "message", "평점 저장 완료",
+                "score", score
+        ));
     }
-
-    ratingRepository.save(rating);
-
-    return "redirect:/anime/" + malId;
-}
 }
