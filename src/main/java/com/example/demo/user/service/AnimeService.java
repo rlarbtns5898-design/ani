@@ -96,7 +96,7 @@ public boolean saveAnimeChunk(int startPage, int endPage, Set<Long> existingIds)
     for (int page = startPage; page <= endPage; page++) {
 
         String url =
-                "https://api.jikan.moe/v4/anime?start_date=2005-01-01&order_by=start_date&sort=asc&page=" + page;
+                "https://api.jikan.moe/v4/anime?start_date=2019-01-12&order_by=start_date&sort=asc&page=" + page;
 
         log.info("Fetching page {}", page);
 
