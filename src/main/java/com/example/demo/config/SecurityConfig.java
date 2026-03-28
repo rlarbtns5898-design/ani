@@ -8,6 +8,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.example.demo.user.security.CustomUserDetails;
+import com.example.demo.user.entity.User;
+
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -31,7 +34,18 @@ public class SecurityConfig {
                 .usernameParameter("username") // 기본값이라 생략 가능
                 .passwordParameter("password")
                 .successHandler((req, res, auth) -> {
-                    res.setStatus(200); // 🔥 redirect 막기
+                    res.setContentType("application/json;charset=UTF-8");
+                
+                    CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+                    User user = userDetails.getUser();
+                
+                    String json = String.format(
+                        "{\"username\":\"%s\", \"firstLogin\":%s}",
+                        user.getUsername(),
+                        user.isFirstLogin()
+                    );
+                
+                    res.getWriter().write(json);
                 })
                 .failureHandler((req, res, e) -> {
                     res.setStatus(401);
@@ -42,6 +56,8 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessHandler((req, res, auth) -> res.setStatus(200))
             );
+
+            
 
         return http.build();
     }

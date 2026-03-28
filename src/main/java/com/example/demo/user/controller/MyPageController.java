@@ -70,10 +70,12 @@ public class MyPageController {
 
                 animeList.add(dto);
 
+                Thread.sleep(300);
+
             } catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
 
                 System.out.println("Rate limit 걸림, malId=" + r.getMalId());
-                break; // 🔥 계속 돌지 말고 중단
+                continue; // 🔥 계속 돌지 말고 중단
 
             } catch (Exception e) {
                 e.printStackTrace();
