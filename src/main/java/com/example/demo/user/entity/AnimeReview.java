@@ -3,26 +3,24 @@ package com.example.demo.user.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-
 import lombok.Getter;
 import lombok.Setter;
+
 
 @Getter
 @Setter
 @Entity
-public class Comment {
+public class AnimeReview {
 
     @Id @GeneratedValue
     private Long id;
 
     private String content;
 
-    @ManyToOne
-    private User user; // 작성자
+    private Long malId;
 
     @ManyToOne
-    @JoinColumn(name = "board_id")
-    private Board board; // 어떤 글에 달린 댓글
+    private User user; // 작성자
+    
 }
