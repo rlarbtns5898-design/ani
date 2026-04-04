@@ -33,7 +33,7 @@ public class OnboardingController {
     @GetMapping
     public List<Map<String, Object>> onboarding() {
 
-        List<Anime> animeList = animeService.getRandomAnime(5);
+        List<Anime> animeList = animeService.getRandomAnime(20);
 
         List<Map<String, Object>> result = new ArrayList<>();
 
