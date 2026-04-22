@@ -140,7 +140,7 @@ public boolean saveAnimeChunk(int startPage, int endPage, Set<Long> existingIds)
                 continue;
 
             Anime anime = new Anime();
-            anime.setMalId(dto.getMalId());
+            anime.setMalId(dto.getMalId().longValue());
             anime.setTitle(dto.getTitle());
             anime.setType(dto.getType());
             anime.setScore(dto.getScore());
