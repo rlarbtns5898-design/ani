@@ -16,4 +16,8 @@ public interface AnimeRepository extends JpaRepository<Anime, Long> {
     boolean existsByMalId(Integer malId);
     @Query("select a.malId from Anime a")
     List<Long> findAllMalIds();
+    List<Anime> findTop10ByOrderByScoreDesc();
+
+    // 2. 추천 리스트에 포함된 malId들에 해당하는 애니메이션 정보들 가져오기
+    List<Anime> findAllByMalIdIn(List<Long> malIds);
 }
