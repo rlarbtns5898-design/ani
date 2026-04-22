@@ -14,7 +14,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/recommendations")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true") // credentials 허용 추가
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
