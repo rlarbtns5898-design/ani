@@ -27,4 +27,7 @@ public class User {
 
     @Column(nullable = false)
     private boolean firstLogin = true;
+
+    @Column(name = "kaggle_id", unique = true)
+    private Long kaggleId;
 }
