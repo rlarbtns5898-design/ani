@@ -18,7 +18,7 @@ public class Anime {
     private Long id;
 
     @Column(name="mal_id",unique = true)
-    private Integer malId;
+    private Long malId;
 
     private String title;
 

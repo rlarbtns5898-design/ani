@@ -13,7 +13,7 @@ public interface AnimeRepository extends JpaRepository<Anime, Long> {
     boolean existsByTitle(String title);
     Optional<Anime> findByMalId(Long malId);
     Page<Anime> findByTitleContaining(String keyword, Pageable pageable);
-    boolean existsByMalId(Integer malId);
+    boolean existsByMalId(Long malId);
     @Query("select a.malId from Anime a")
     List<Long> findAllMalIds();
     List<Anime> findTop10ByOrderByScoreDesc();
