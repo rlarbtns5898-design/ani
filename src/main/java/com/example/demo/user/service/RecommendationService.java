@@ -20,22 +20,27 @@ public class RecommendationService {
     private final AnimeRepository animeRepository;
 
     public List<Anime> getRecommendations(Long myId) {
+        System.out.println("=== 추천 로직 시작 (UserID: " + myId + ") ===");
+
         // 1. 내 시청 기록 및 전체 장르 파악
         List<AnimeRating> myRatings = animeRatingRepository.findByUserId(myId);
-        if (myRatings.isEmpty()) return Collections.emptyList();
+        System.out.println("STEP 1: 내 시청 기록 수 = " + myRatings.size());
+
+        if (myRatings.isEmpty()) {
+            System.out.println("RESULT: 내 기록이 없어 추천을 중단합니다.");
+            return Collections.emptyList();
+        }
 
         Set<Long> myWatchedIds = myRatings.stream()
                 .map(AnimeRating::getMalId)
                 .collect(Collectors.toSet());
 
-        // 전체 장르 셋 (유사도 계산용)
         Set<String> myGenres = myRatings.stream()
                 .map(r -> r.getAnime().getGenres())
                 .filter(Objects::nonNull)
                 .flatMap(g -> Arrays.stream(g.split(",")).map(String::trim))
                 .collect(Collectors.toSet());
 
-        // 🔥 내 핵심 장르 Top 3 추출 (Fallback용)
         List<String> myTopGenres = myRatings.stream()
                 .map(r -> r.getAnime().getGenres())
                 .filter(Objects::nonNull)
@@ -46,24 +51,31 @@ public class RecommendationService {
                 .limit(3)
                 .map(Map.Entry::getKey)
                 .toList();
+        System.out.println("STEP 1: 내 핵심 장르 Top 3 = " + myTopGenres);
 
         // 2. DB에서 후보 유저 추출
-        // 시도 1: 똑같은 작품을 본 유저 찾기
         List<Long> candidateIds = animeRatingRepository.findCandidateUserIds(myId, PageRequest.of(0, 500));
+        System.out.println("STEP 2-1 (작품기반): 후보 유저 수 = " + candidateIds.size());
 
-        // 시도 2: 똑같은 작품 본 유저가 없으면 장르 기반으로 찾기 (Fallback)
         if (candidateIds.isEmpty() && !myTopGenres.isEmpty()) {
+            System.out.println("STEP 2-2: 작품 기반 후보가 없어 장르 기반 Fallback 실행...");
             String g1 = myTopGenres.get(0);
             String g2 = myTopGenres.size() > 1 ? myTopGenres.get(1) : g1;
             String g3 = myTopGenres.size() > 2 ? myTopGenres.get(2) : g1;
 
             candidateIds = animeRatingRepository.findCandidateUserIdsByTopGenres(myId, g1, g2, g3, PageRequest.of(0, 500));
+            System.out.println("STEP 2-2 (장르기반): 후보 유저 수 = " + candidateIds.size());
         }
 
-        if (candidateIds.isEmpty()) return Collections.emptyList();
+        if (candidateIds.isEmpty()) {
+            System.out.println("RESULT: 후보 유저가 단 한 명도 없어 추천을 중단합니다.");
+            return Collections.emptyList();
+        }
 
-        // 3. 후보 유저들의 평점 데이터를 통째로 조회 (N+1 방지)
+        // 3. 후보 유저들의 평점 데이터 조회
         List<AnimeRating> allCandidateRatings = animeRatingRepository.findAllByUserIds(candidateIds);
+        System.out.println("STEP 3: 후보 유저들의 총 평점 데이터 수 = " + allCandidateRatings.size());
+
         Map<Long, List<AnimeRating>> ratingsByUser = allCandidateRatings.stream()
                 .collect(Collectors.groupingBy(r -> r.getUser().getId()));
 
@@ -87,7 +99,6 @@ public class RecommendationService {
                             .mapToDouble(Double::doubleValue)
                             .average().orElse(0.0);
 
-                    // 점수 계산 (공통작품 수 + 공통비율 + 장르일치도)
                     double finalScore = (commonCount * 1.5) + (commonRatio * 20.0) + (genreMatchRate * 10.0);
                     return new UserScore(userId, finalScore);
                 })
@@ -95,18 +106,25 @@ public class RecommendationService {
                 .limit(30)
                 .map(UserScore::getUserId)
                 .toList();
+        System.out.println("STEP 4: 정밀 필터링 통과 유저(Top 30) 수 = " + similarUserIds.size());
 
-        // 5. 정예 멤버 30명의 선호 작품 중 내가 안 본 것 추천
+        // 5. 정예 멤버 30명이 좋아하는 작품 중 내가 안 본 것 추천
         List<Long> recommendedIds = animeRatingRepository.findRecommendedAnimeIds(
                 similarUserIds,
                 new ArrayList<>(myWatchedIds),
                 PageRequest.of(0, 10)
         );
+        System.out.println("STEP 5: 최종 추천 애니메이션 ID 수 = " + recommendedIds.size());
 
-        if (recommendedIds.isEmpty()) return Collections.emptyList();
+        if (recommendedIds.isEmpty()) {
+            System.out.println("RESULT: 후보 유저들의 평점이 낮거나(4점 미만), 내가 이미 다 본 작품들뿐입니다.");
+            return Collections.emptyList();
+        }
 
-        // 6. ID 리스트를 실제 Anime 엔티티 리스트로 변환 (순서 보장)
+        // 6. ID 리스트를 실제 Anime 엔티티 리스트로 변환
         List<Anime> unsortedAnimes = animeRepository.findAllById(recommendedIds);
+
+        System.out.println("=== 추천 로직 완료 (최종 반환 개수: " + unsortedAnimes.size() + ") ===");
 
         return recommendedIds.stream()
                 .map(id -> unsortedAnimes.stream()
