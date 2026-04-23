@@ -243,4 +243,65 @@ public boolean saveAnimeChunk(int startPage, int endPage, Set<Long> existingIds)
             log.error("Sleep interrupted", e);
         }
     }
+    @Async
+    public void fillMissingAnimeData(List<Long> missingIds) {
+        if (missingIds == null || missingIds.isEmpty()) return;
+
+        log.info("누락된 애니메이션 데이터 보강 시작: {}건", missingIds.size());
+
+        for (Long malId : missingIds) {
+            try {
+                // 1. 단일 작품 조회를 위한 URL (Jikan API v4)
+                String url = "https://api.jikan.moe/v4/anime/" + malId;
+
+                // 2. API 호출 (JikanResponseDTO 대신 단일 객체 응답을 위한 Map 또는 전용 DTO 사용)
+                // 여기서는 기존 구조를 참고하여 Map으로 받고 데이터 추출
+                Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+                if (response == null || !response.containsKey("data")) continue;
+
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+
+                // 3. Anime 엔티티 생성 및 설정
+                Anime anime = new Anime();
+                anime.setMalId(malId);
+                anime.setTitle((String) data.get("title"));
+                anime.setScore(data.get("score") != null ? Double.parseDouble(data.get("score").toString()) : 0.0);
+                anime.setType((String) data.get("type"));
+                anime.setRating((String) data.get("rating"));
+
+                // 이미지 처리
+                Map<String, Object> images = (Map<String, Object>) data.get("images");
+                if (images != null) {
+                    Map<String, Object> jpg = (Map<String, Object>) images.get("jpg");
+                    if (jpg != null) {
+                        anime.setImageUrl((String) jpg.get("image_url"));
+                    }
+                }
+
+                // 장르 처리 (기존의 joinNames 로직 활용을 위해 변환 필요)
+                // 만약 여기서 바로 String으로 조인한다면:
+                List<Map<String, String>> genresList = (List<Map<String, String>>) data.get("genres");
+                if (genresList != null) {
+                    String genres = genresList.stream()
+                            .map(g -> g.get("name"))
+                            .collect(Collectors.joining(", "));
+                    anime.setGenres(genres);
+                }
+
+                // 4. 저장
+                animeRepository.save(anime);
+                log.info("보강 완료: [ID:{}] {}", malId, anime.getTitle());
+
+                // API 속도 제한 준수
+                Thread.sleep(1000);
+
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                log.warn("API 요청 한도 초과 (429), 잠시 대기합니다...");
+                sleep(4000);
+            } catch (Exception e) {
+                log.error("ID {} 데이터 보강 중 오류 발생: {}", malId, e.getMessage());
+            }
+        }
+        log.info("모든 누락 데이터 보강 작업 종료");
+    }
 }

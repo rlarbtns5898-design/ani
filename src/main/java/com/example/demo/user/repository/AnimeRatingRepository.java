@@ -18,7 +18,10 @@ public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> 
     List<AnimeRating> findByUser(User user); // MyPageController 등에서 사용
     Optional<AnimeRating> findByUserAndMalId(User user, Long malId); // RatingController 등에서 사용
     Optional<AnimeRating> findByMalId(Long malId); // AnimeController에서 사용
-
+    @Query(value = "SELECT DISTINCT ar.mal_id FROM anime_rating ar " +
+            "LEFT JOIN anime a ON ar.mal_id = a.mal_id " +
+            "WHERE a.mal_id IS NULL", nativeQuery = true)
+    List<Long> findMissingAnimeIds();
     // --- 추천 시스템용 하이브리드 쿼리 ---
     @Query("SELECT DISTINCT r.user.id FROM AnimeRating r " +
             "JOIN r.anime a " +
