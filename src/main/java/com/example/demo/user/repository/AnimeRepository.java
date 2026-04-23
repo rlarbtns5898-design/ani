@@ -19,12 +19,13 @@ public interface AnimeRepository extends JpaRepository<Anime, Long> {
     List<Long> findAllMalIds();
     List<Anime> findTop10ByOrderByScoreDesc();
     @Query(value = "SELECT * FROM anime a " +
-            "WHERE a.score >= 7.5 " + // scored_by 조건 제거
-            "AND (:genre IS NULL OR a.genres LIKE %:genre%) " +
+            "WHERE a.score >= 7.5 " +
+            "AND (:genre IS NULL OR a.genres LIKE CONCAT('%', :genre, '%')) " + // Native Query에서는 CONCAT을 쓰는 게 안전합니다.
             "ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<Anime> findHiddenGemsByGenre(
-            @Param("genreKeyword") String genreKeyword,
-            @Param("limitCount") int limitCount);
+            @Param("genre") String genre,   // 이름을 :genre와 똑같이 "genre"로 맞춤
+            @Param("limit") int limit       // :limit과 똑같이 "limit"으로 맞춤
+    );
     // 2. 추천 리스트에 포함된 malId들에 해당하는 애니메이션 정보들 가져오기
     List<Anime> findAllByMalIdIn(List<Long> malIds);
 }
