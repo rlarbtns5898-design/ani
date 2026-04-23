@@ -19,10 +19,9 @@ public interface AnimeRepository extends JpaRepository<Anime, Long> {
     List<Long> findAllMalIds();
     List<Anime> findTop10ByOrderByScoreDesc();
     @Query(value = "SELECT * FROM anime a " +
-            "WHERE a.score >= 7.5 " +
-            "AND a.scored_by BETWEEN 1000 AND 50000 " + // 너무 적지도, 너무 많지도 않은 숨은 명작
-            "AND (:genreKeyword IS NULL OR a.genres LIKE %:genreKeyword%) " +
-            "ORDER BY RANDOM() LIMIT :limitCount", nativeQuery = true)
+            "WHERE a.score >= 7.5 " + // scored_by 조건 제거
+            "AND (:genre IS NULL OR a.genres LIKE %:genre%) " +
+            "ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<Anime> findHiddenGemsByGenre(
             @Param("genreKeyword") String genreKeyword,
             @Param("limitCount") int limitCount);
