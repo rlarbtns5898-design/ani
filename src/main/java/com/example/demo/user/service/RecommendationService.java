@@ -35,13 +35,17 @@ public class RecommendationService {
                 .map(AnimeRating::getMalId)
                 .collect(Collectors.toSet());
 
+        // 🔥 [수정] Anime 객체 null 체크 추가
         Set<String> myGenres = myRatings.stream()
+                .filter(r -> r.getAnime() != null)
                 .map(r -> r.getAnime().getGenres())
                 .filter(Objects::nonNull)
                 .flatMap(g -> Arrays.stream(g.split(",")).map(String::trim))
                 .collect(Collectors.toSet());
 
+        // 🔥 [수정] Anime 객체 null 체크 추가
         List<String> myTopGenres = myRatings.stream()
+                .filter(r -> r.getAnime() != null)
                 .map(r -> r.getAnime().getGenres())
                 .filter(Objects::nonNull)
                 .flatMap(g -> Arrays.stream(g.split(",")).map(String::trim))
@@ -92,7 +96,9 @@ public class RecommendationService {
 
                     double commonRatio = (double) commonCount / totalTheirCount;
 
+                    // 🔥 [수정] Java 계산부에서도 Anime null 체크 추가
                     double genreMatchRate = theirRatings.stream()
+                            .filter(r -> r.getAnime() != null)
                             .map(r -> r.getAnime().getGenres())
                             .filter(Objects::nonNull)
                             .map(g -> Arrays.stream(g.split(",")).map(String::trim).anyMatch(myGenres::contains) ? 1.0 : 0.0)
