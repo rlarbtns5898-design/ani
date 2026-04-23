@@ -1,96 +1,103 @@
 package com.example.demo.user.service;
+
 import com.example.demo.user.entity.Anime;
 import com.example.demo.user.entity.AnimeRating;
-import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.AnimeRatingRepository;
 import com.example.demo.user.repository.AnimeRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
 
-    private final AnimeRatingRepository ratingRepository;
+    private final AnimeRatingRepository animeRatingRepository;
     private final AnimeRepository animeRepository;
 
-    public List<Anime> getRecommendations(User user) {
-        System.out.println("=== 추천 로직 시작: 유저 " + user.getUsername() + " ===");
+    // 반환 타입을 List<Long>에서 List<Anime>로 수정 🎯
+    public List<Anime> getRecommendations(Long myId) {
+        // 1. 내 시청 기록 및 장르 파악
+        List<AnimeRating> myRatings = animeRatingRepository.findByUserId(myId);
+        if (myRatings.isEmpty()) return Collections.emptyList();
 
-        // 1. 내가 본 애니메이션 및 평점 정보 가져오기
-        List<AnimeRating> myRatings = ratingRepository.findByUser(user);
-        List<Long> myWatchedIds = myRatings.stream().map(AnimeRating::getMalId).toList();
-        System.out.println("내가 평가한 애니 개수: " + myRatings.size());
+        Set<Long> myWatchedIds = myRatings.stream()
+                .map(AnimeRating::getMalId)
+                .collect(Collectors.toSet());
 
-        // 2. 별점 반영 장르 선호도 계산
-        Map<String, Double> preferenceMap = getGenrePreferenceScores(myRatings);
-        System.out.println("나의 장르 선호도 점수: " + preferenceMap);
+        Set<String> myGenres = myRatings.stream()
+                .map(r -> r.getAnime().getGenres())
+                .filter(Objects::nonNull)
+                .flatMap(g -> Arrays.stream(g.split(",")).map(String::trim))
+                .collect(Collectors.toSet());
 
-        // 3. 유사 유저 50명 찾기
-        List<Long> similarUserIds = ratingRepository.findSimilarUserIds(
-                user.getId(), PageRequest.of(0, 50));
+        // 2. DB에서 후보 유저 500명 추출
+        List<Long> candidateIds = animeRatingRepository.findCandidateUserIds(myId, PageRequest.of(0, 500));
+        if (candidateIds.isEmpty()) return Collections.emptyList();
 
-        // 4. 추천 후보 ID 추출 (여기서 변수를 선언해야 에러가 안 납니다!)
-        List<Long> recommendedIds = new ArrayList<>();
-        if (!similarUserIds.isEmpty()) {
-            recommendedIds = ratingRepository.findRecommendedAnimeIds(
-                    similarUserIds, myWatchedIds, PageRequest.of(0, 40));
-        }
+        // 3. 후보 유저들의 평점 데이터를 통째로 조회
+        List<AnimeRating> allCandidateRatings = animeRatingRepository.findAllByUserIds(candidateIds);
+        Map<Long, List<AnimeRating>> ratingsByUser = allCandidateRatings.stream()
+                .collect(Collectors.groupingBy(r -> r.getUser().getId()));
 
-        // 5. 후보군이 있다면 내 취향 점수로 정렬하여 반환
-        if (!recommendedIds.isEmpty()) {
-            List<Anime> candidates = animeRepository.findAllByMalIdIn(recommendedIds);
-            System.out.println("후보군 개수: " + candidates.size());
+        // 4. Java에서 정밀 점수 계산
+        List<Long> similarUserIds = candidateIds.stream()
+                .map(userId -> {
+                    List<AnimeRating> theirRatings = ratingsByUser.getOrDefault(userId, Collections.emptyList());
+                    int totalTheirCount = theirRatings.size();
+                    if (totalTheirCount == 0) return new UserScore(userId, 0.0);
 
-            return candidates.stream()
-                    .sorted((a1, a2) -> {
-                        double score1 = calculateFinalScore(a1, preferenceMap);
-                        double score2 = calculateFinalScore(a2, preferenceMap);
+                    long commonCount = theirRatings.stream()
+                            .filter(r -> myWatchedIds.contains(r.getMalId()))
+                            .count();
 
-                        // 디버깅용: 어떤 애니가 몇 점인지 확인
-                        System.out.println("애니: " + a1.getTitle() + " | 취향점수: " + score1);
+                    double commonRatio = (double) commonCount / totalTheirCount;
 
-                        return Double.compare(score2, score1); // 높은 점수 순
-                    })
-                    .limit(10)
-                    .toList();
-        }
+                    double genreMatchRate = theirRatings.stream()
+                            .map(r -> r.getAnime().getGenres())
+                            .filter(Objects::nonNull)
+                            .map(g -> Arrays.stream(g.split(",")).map(String::trim).anyMatch(myGenres::contains) ? 1.0 : 0.0)
+                            .mapToDouble(Double::doubleValue)
+                            .average().orElse(0.0);
 
-        // 6. 후보가 없으면 평점 순 기본 리스트 반환
-        System.out.println("추천 후보가 없어 기본 리스트를 반환합니다.");
-        return animeRepository.findTop10ByOrderByScoreDesc();
+                    double finalScore = (commonCount * 1.5) + (commonRatio * 20.0) + (genreMatchRate * 10.0);
+                    return new UserScore(userId, finalScore);
+                })
+                .sorted(Comparator.comparing(UserScore::getScore).reversed())
+                .limit(30)
+                .map(UserScore::getUserId)
+                .toList();
+
+        // 5. 정예 멤버 30명이 좋아하는 작품 중 내가 안 본 것 추천 ID 10개 추출
+        List<Long> recommendedIds = animeRatingRepository.findRecommendedAnimeIds(
+                similarUserIds,
+                new ArrayList<>(myWatchedIds),
+                PageRequest.of(0, 10)
+        );
+
+        if (recommendedIds.isEmpty()) return Collections.emptyList();
+
+        // 6. 🔥 ID 리스트를 실제 Anime 엔티티 리스트로 변환 (순서 보장)
+        List<Anime> unsortedAnimes = animeRepository.findAllById(recommendedIds);
+
+        // recommendedIds 순서(추천 점수 순)대로 다시 정렬하여 반환
+        return recommendedIds.stream()
+                .map(id -> unsortedAnimes.stream()
+                        .filter(anime -> anime.getMalId().equals(id))
+                        .findFirst()
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .toList();
     }
 
-    private Map<String, Double> getGenrePreferenceScores(List<AnimeRating> myRatings) {
-        Map<String, Double> genreScores = new HashMap<>();
-        for (AnimeRating rating : myRatings) {
-            animeRepository.findByMalId(rating.getMalId()).ifPresent(anime -> {
-                if (anime.getGenres() != null) {
-                    String[] genres = anime.getGenres().split(",");
-                    double userScore = rating.getScore();
-                    for (String g : genres) {
-                        String trimmed = g.trim();
-                        genreScores.put(trimmed, genreScores.getOrDefault(trimmed, 0.0) + userScore);
-                    }
-                }
-            });
-        }
-        return genreScores;
-    }
-
-    private double calculateFinalScore(Anime anime, Map<String, Double> preferenceMap) {
-        if (anime.getGenres() == null) return 0.0;
-        String[] genres = anime.getGenres().split(",");
-        double totalScore = 0.0;
-        for (String g : genres) {
-            totalScore += preferenceMap.getOrDefault(g.trim(), 0.0);
-        }
-        return totalScore;
+    @Getter
+    @RequiredArgsConstructor
+    private static class UserScore {
+        private final Long userId;
+        private final double score;
     }
 }

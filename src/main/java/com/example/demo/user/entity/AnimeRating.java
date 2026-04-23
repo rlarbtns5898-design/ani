@@ -20,5 +20,7 @@ public class AnimeRating {
     @ManyToOne
     private User user;
 
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "malId", referencedColumnName = "malId", insertable = false, updatable = false)
+    private Anime anime;
 }

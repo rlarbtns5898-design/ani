@@ -32,7 +32,7 @@ public class RecommendationController {
         User user = userDetails.getUser();
 
         // 5. 추천 서비스 호출
-        List<Anime> recommendations = recommendationService.getRecommendations(user);
+        List<Anime> recommendations = recommendationService.getRecommendations(user.getId());
 
         return ResponseEntity.ok(recommendations);
     }

@@ -14,25 +14,24 @@ public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> 
     Optional<AnimeRating> findByMalId(Long malId);
     List<AnimeRating> findByUser(User user);
     Optional<AnimeRating> findByUserAndMalId(User user, Long malId);
-
-    // 1. 유사 사용자 찾기 쿼리 개선 🎯
-    @Query(value = "SELECT r.user.id FROM AnimeRating r " +
-            "JOIN Anime a ON r.malId = a.malId " +
+    List<AnimeRating> findByUserId(Long userId);
+    // 1. 후보군 추출: 나랑 겹치는 작품이 있는 유저 상위 100명만 빠르게 가져옴
+    @Query("SELECT r.user.id FROM AnimeRating r " +
             "WHERE r.user.id != :myId " +
+            "AND r.malId IN (SELECT my.malId FROM AnimeRating my WHERE my.user.id = :myId) " +
             "GROUP BY r.user.id " +
-            "ORDER BY " +
-            // (1) 나와 같은 작품을 본 횟수 (가중치 2.0)
-            "(COUNT(DISTINCT CASE WHEN r.malId IN (SELECT my.malId FROM AnimeRating my WHERE my.user.id = :myId) THEN r.malId END) * 2.0) + " +
-            // (2) 내가 평가한 장르들과 겹치는 작품을 본 횟수 (가중치 1.0)
-            "SUM(CASE WHEN EXISTS (SELECT 1 FROM AnimeRating my2 JOIN Anime myA ON my2.malId = myA.malId " +
-            "WHERE my2.user.id = :myId AND a.genres LIKE CONCAT('%', myA.genres, '%')) THEN 1 ELSE 0 END) DESC")
-    List<Long> findSimilarUserIds(@Param("myId") Long myId, Pageable pageable);
+            "ORDER BY COUNT(r.id) DESC")
+    List<Long> findCandidateUserIds(@Param("myId") Long myId, Pageable pageable);
 
-    // 2. 추천 애니메이션 ID 찾기 (기존과 동일하되 점수 기준 완화 가능)
-    @Query(value = "SELECT r.malId FROM AnimeRating r " +
+    // 2. 계산을 위해 선택된 유저들의 모든 평점 데이터를 한 번에 가져옴 (N+1 방지)
+    @Query("SELECT r FROM AnimeRating r JOIN FETCH r.user JOIN FETCH r.anime WHERE r.user.id IN :userIds")
+    List<AnimeRating> findAllByUserIds(@Param("userIds") List<Long> userIds);
+
+    // 3. 최종 추천 애니메이션 ID 찾기 (기존 유지)
+    @Query("SELECT r.malId FROM AnimeRating r " +
             "WHERE r.user.id IN :similarUserIds " +
             "AND r.malId NOT IN :myWatchedIds " +
-            "AND r.score >= 4 " + // 4점에서  후보군 확보
+            "AND r.score >= 4 " +
             "GROUP BY r.malId " +
             "ORDER BY COUNT(r.id) DESC, AVG(r.score) DESC")
     List<Long> findRecommendedAnimeIds(@Param("similarUserIds") List<Long> similarUserIds,
