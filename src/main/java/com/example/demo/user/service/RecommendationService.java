@@ -128,7 +128,9 @@ public class RecommendationService {
         return ratings.stream()
                 .filter(r -> r.getAnime() != null && r.getAnime().getGenres() != null)
                 .filter(r -> (isAbove ? r.getScore() >= threshold : r.getScore() <= threshold))
-                .flatMap(r -> Arrays.stream(r.getAnime().getGenres().split(",")).map(String::trim))
+                .flatMap(r -> Arrays.stream(r.getAnime().getGenres().split(",")) // 1. 우선 콤마로만 자른다
+                        .map(String::trim) // 2. 앞뒤에 붙은 불필요한 공백(" ")을 제거한다
+                        .filter(g -> !g.isEmpty()))
                 .collect(Collectors.toSet());
     }
 

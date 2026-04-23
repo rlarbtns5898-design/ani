@@ -17,11 +17,13 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // 1. 누락된 ID 리스트 조회 (아까 만든 Native Query 메서드)
-        List<Long> missingIds = ratingRepository.findMissingAnimeIds();
+        new Thread(() -> {
+            List<Long> missingIds = ratingRepository.findMissingAnimeIds();
 
-        if (!missingIds.isEmpty()) {
-            // 2. AnimeService에 만들어둔 보강 로직 호출
-            animeService.fillMissingAnimeData(missingIds);
-        }
+            if (!missingIds.isEmpty()) {
+                // 2. AnimeService에 만들어둔 보강 로직 호출
+                animeService.fillMissingAnimeData(missingIds);
+            }
+        }).start();
     }
 }
