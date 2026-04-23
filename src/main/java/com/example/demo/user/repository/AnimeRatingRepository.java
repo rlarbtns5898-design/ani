@@ -55,12 +55,13 @@ public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> 
     List<AnimeRating> findAllByUserIds(@Param("userIds") List<Long> userIds);
 
     // 4. 최종 추천 애니메이션 ID 찾기
-    @Query("SELECT r.malId FROM AnimeRating r " +
-            "WHERE r.user.id IN :similarUserIds " +
-            "AND r.malId NOT IN :myWatchedIds " +
-            "AND r.score >= 4 " +
-            "GROUP BY r.malId " +
-            "ORDER BY COUNT(r.id) DESC, AVG(r.score) DESC")
+    @Query("SELECT ar.malId " +
+            "FROM AnimeRating ar " +
+            "WHERE ar.user.id IN :similarUserIds " +
+            "AND ar.malId NOT IN :myWatchedIds " +
+            "GROUP BY ar.malId " +
+            "HAVING COUNT(ar.id) >= 2 " +
+            "ORDER BY (AVG(ar.score) * 3.0) - (LOG(COUNT(ar.id) + 1) * 2.0) DESC") // 평점은 높게, 인기도(Log값)는 감점
     List<Long> findRecommendedAnimeIds(@Param("similarUserIds") List<Long> similarUserIds,
                                        @Param("myWatchedIds") List<Long> myWatchedIds,
                                        Pageable pageable);
