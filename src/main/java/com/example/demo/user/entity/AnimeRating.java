@@ -21,6 +21,11 @@ public class AnimeRating {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "malId", referencedColumnName = "malId", insertable = false, updatable = false)
+    @JoinColumn(
+            name = "malId",                // AnimeRating 테이블 내의 FK 컬럼명
+            referencedColumnName = "mal_id", // 참조하는 Anime 테이블의 실제 컬럼명 (중요!)
+            insertable = false,
+            updatable = false
+    )
     private Anime anime;
 }
