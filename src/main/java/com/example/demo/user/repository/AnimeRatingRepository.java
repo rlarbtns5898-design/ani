@@ -12,9 +12,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> {
-    List<AnimeRating> findByUserId(Long userId);
 
-    // [통합] 하이브리드 후보군 추출: 나랑 작품이 겹치거나 선호 장르를 본 유저 500명
+    // --- 기존 컨트롤러들에서 사용하는 필수 메서드 복구 ---
+    List<AnimeRating> findByUserId(Long userId);
+    List<AnimeRating> findByUser(User user); // MyPageController 등에서 사용
+    Optional<AnimeRating> findByUserAndMalId(User user, Long malId); // RatingController 등에서 사용
+    Optional<AnimeRating> findByMalId(Long malId); // AnimeController에서 사용
+
+    // --- 추천 시스템용 하이브리드 쿼리 ---
     @Query("SELECT DISTINCT r.user.id FROM AnimeRating r " +
             "JOIN r.anime a " +
             "WHERE r.user.id != :myId " +
@@ -44,7 +49,6 @@ public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> 
             "WHERE r.user.id IN :userIds")
     List<AnimeRating> findAllByUserIds(@Param("userIds") List<Long> userIds);
 
-    // [수정] HAVING COUNT를 1로 낮춰 데이터가 적어도 결과가 나오게 함
     @Query("SELECT ar.malId " +
             "FROM AnimeRating ar " +
             "WHERE ar.user.id IN :similarUserIds " +
