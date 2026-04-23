@@ -128,7 +128,7 @@ public class RecommendationService {
         }
 
         // 6. ID 리스트를 실제 Anime 엔티티 리스트로 변환
-        List<Anime> unsortedAnimes = animeRepository.findAllById(recommendedIds);
+        List<Anime> unsortedAnimes = animeRepository.findAllByMalIdIn(recommendedIds);
 
         System.out.println("=== 추천 로직 완료 (최종 반환 개수: " + unsortedAnimes.size() + ") ===");
 
