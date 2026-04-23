@@ -42,7 +42,10 @@ public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> 
             @Param("g2") String g2,
             @Param("g3") String g3,
             Pageable pageable);
-
+    @Query("SELECT ar.malId, COUNT(ar.id) FROM AnimeRating ar GROUP BY ar.malId")
+    List<Object[]> findAllAnimeUsageCounts();
+    @Query("SELECT COUNT(DISTINCT ar.user.id) FROM AnimeRating ar")
+    long countDistinctUserIds();
     // 3. 계산을 위해 선택된 유저들의 모든 평점 데이터를 한 번에 가져옴 (N+1 방지)
     // 배포 에러 방지를 위해 JOIN FETCH 대상 확인 완료
     @Query("SELECT r FROM AnimeRating r " +
