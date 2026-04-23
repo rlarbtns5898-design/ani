@@ -22,10 +22,11 @@ public class AnimeRating {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "malId",                // AnimeRating 테이블 내의 FK 컬럼명
-            referencedColumnName = "mal_id", // 참조하는 Anime 테이블의 실제 컬럼명 (중요!)
+            name = "malId",
+            referencedColumnName = "mal_id",
             insertable = false,
-            updatable = false
+            updatable = false,
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT) // 이 줄 추가!
     )
     private Anime anime;
 }
