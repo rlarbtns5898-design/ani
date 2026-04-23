@@ -7,61 +7,51 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> {
-    Optional<AnimeRating> findByMalId(Long malId);
-    List<AnimeRating> findByUser(User user);
-    Optional<AnimeRating> findByUserAndMalId(User user, Long malId);
     List<AnimeRating> findByUserId(Long userId);
 
-    // 1. [기본] 후보군 추출: 나랑 겹치는 작품이 있는 유저 상위 500명 (작품 기반)
-    @Query("SELECT r.user.id FROM AnimeRating r " +
-            "WHERE r.user.id != :myId " +
-            "AND r.malId IN (SELECT my.malId FROM AnimeRating my WHERE my.user.id = :myId) " +
-            "GROUP BY r.user.id " +
-            "ORDER BY COUNT(r.id) DESC")
-    List<Long> findCandidateUserIds(@Param("myId") Long myId, Pageable pageable);
-
-    // 2. [Fallback] 후보군 추출: 내 Top 3 장르 중 하나라도 포함된 작품을 본 유저 (장르 기반) 🎯
-    // r.anime와 조인하여 genres 컬럼을 검색합니다.
-    @Query("SELECT r.user.id FROM AnimeRating r " +
+    // [통합] 하이브리드 후보군 추출: 나랑 작품이 겹치거나 선호 장르를 본 유저 500명
+    @Query("SELECT DISTINCT r.user.id FROM AnimeRating r " +
             "JOIN r.anime a " +
             "WHERE r.user.id != :myId " +
             "AND (" +
-            "  a.genres LIKE CONCAT('%', :g1, '%') OR " +
-            "  a.genres LIKE CONCAT('%', :g2, '%') OR " +
-            "  a.genres LIKE CONCAT('%', :g3, '%')" +
-            ") " +
-            "GROUP BY r.user.id " +
-            "ORDER BY COUNT(r.id) DESC")
-    List<Long> findCandidateUserIdsByTopGenres(
+            "  r.malId IN :myWatchedIds OR " +
+            "  a.genres LIKE %:g1% OR " +
+            "  a.genres LIKE %:g2% OR " +
+            "  a.genres LIKE %:g3%" +
+            ")")
+    List<Long> findHybridCandidateUserIds(
             @Param("myId") Long myId,
+            @Param("myWatchedIds") Collection<Long> myWatchedIds,
             @Param("g1") String g1,
             @Param("g2") String g2,
             @Param("g3") String g3,
             Pageable pageable);
+
     @Query("SELECT ar.malId, COUNT(ar.id) FROM AnimeRating ar GROUP BY ar.malId")
     List<Object[]> findAllAnimeUsageCounts();
+
     @Query("SELECT COUNT(DISTINCT ar.user.id) FROM AnimeRating ar")
     long countDistinctUserIds();
-    // 3. 계산을 위해 선택된 유저들의 모든 평점 데이터를 한 번에 가져옴 (N+1 방지)
-    // 배포 에러 방지를 위해 JOIN FETCH 대상 확인 완료
+
     @Query("SELECT r FROM AnimeRating r " +
             "JOIN FETCH r.user " +
             "JOIN FETCH r.anime " +
             "WHERE r.user.id IN :userIds")
     List<AnimeRating> findAllByUserIds(@Param("userIds") List<Long> userIds);
 
-    // 4. 최종 추천 애니메이션 ID 찾기
+    // [수정] HAVING COUNT를 1로 낮춰 데이터가 적어도 결과가 나오게 함
     @Query("SELECT ar.malId " +
             "FROM AnimeRating ar " +
             "WHERE ar.user.id IN :similarUserIds " +
             "AND ar.malId NOT IN :myWatchedIds " +
             "GROUP BY ar.malId " +
-            "HAVING COUNT(ar.id) >= 2 " +
-            "ORDER BY (AVG(ar.score) * 3.0) - (LOG(COUNT(ar.id) + 1) * 2.0) DESC") // 평점은 높게, 인기도(Log값)는 감점
+            "HAVING COUNT(ar.id) >= 1 " +
+            "ORDER BY (AVG(ar.score) * 3.0) - (LOG(COUNT(ar.id) + 1) * 2.0) DESC")
     List<Long> findRecommendedAnimeIds(@Param("similarUserIds") List<Long> similarUserIds,
                                        @Param("myWatchedIds") List<Long> myWatchedIds,
                                        Pageable pageable);
