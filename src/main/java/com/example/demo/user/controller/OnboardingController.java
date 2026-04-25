@@ -4,6 +4,7 @@ import com.example.demo.user.entity.Anime;
 import com.example.demo.user.entity.AnimeRating;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.AnimeRatingRepository;
+import com.example.demo.user.repository.AnimeRepository;
 import com.example.demo.user.repository.UserRepository;
 import com.example.demo.user.security.CustomUserDetails;
 import com.example.demo.user.service.AnimeService;
@@ -25,27 +26,26 @@ import java.util.Map;
 @RequestMapping("/api/onboarding")
 public class OnboardingController {
 
-    private final AnimeService animeService;
+    private final AnimeRepository animeRepository;
+
     private final AnimeRatingRepository animeRatingRepository;
     private final UserRepository userRepository;
 
     // 🔥 1. 랜덤 애니 가져오기
     @GetMapping
     public List<Map<String, Object>> onboarding() {
-
-        List<Anime> animeList = animeService.getRandomAnime(20);
+        // 기존: animeService.getRandomAnime(20) -> findAll() 때문에 느림
+        // 변경: DB 랜덤 쿼리 사용
+        List<Anime> animeList = animeRepository.findRandomAnime(20);
 
         List<Map<String, Object>> result = new ArrayList<>();
-
         for (Anime anime : animeList) {
             Map<String, Object> map = new HashMap<>();
             map.put("malId", anime.getMalId());
             map.put("title", anime.getTitle());
             map.put("imageUrl", anime.getImageUrl());
-
             result.add(map);
         }
-
         return result;
     }
 
