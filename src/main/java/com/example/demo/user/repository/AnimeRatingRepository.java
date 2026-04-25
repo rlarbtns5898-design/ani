@@ -62,4 +62,6 @@ public interface AnimeRatingRepository extends JpaRepository<AnimeRating, Long> 
     List<Long> findRecommendedAnimeIds(@Param("similarUserIds") List<Long> similarUserIds,
                                        @Param("myWatchedIds") List<Long> myWatchedIds,
                                        Pageable pageable);
+    @Query("SELECT r FROM AnimeRating r JOIN FETCH r.anime WHERE r.user.id = :userId")
+    List<AnimeRating> findByUserIdWithAnime(@Param("userId") Long userId);
 }

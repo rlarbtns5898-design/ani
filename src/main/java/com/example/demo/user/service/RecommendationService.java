@@ -21,7 +21,7 @@ public class RecommendationService {
     public List<Anime> getRecommendations(Long myId) {
         try {
             // 1. 내 시청 기록 파악
-            List<AnimeRating> myRatings = animeRatingRepository.findByUserId(myId);
+            List<AnimeRating> myRatings = animeRatingRepository.findByUserIdWithAnime(myId);
             if (myRatings == null || myRatings.isEmpty()) return Collections.emptyList();
 
             Set<Long> myWatchedIds = myRatings.stream()
@@ -33,8 +33,8 @@ public class RecommendationService {
 
             // Top 3 장르 추출 (에러 방지용 리스트 가공)
             List<String> top3Genres = myRatings.stream()
-                    .filter(r -> r.getAnime() != null && r.getAnime().getGenres() != null)
-                    .flatMap(r -> Arrays.stream(r.getAnime().getGenres().split(",")).map(String::trim))
+                    .filter(r -> r.getAnime() != null)
+                    .flatMap(r -> r.getAnime().getGenreList().stream()) // [변경 후]
                     .filter(g -> !g.isEmpty())
                     .collect(Collectors.groupingBy(g -> g, Collectors.counting()))
                     .entrySet().stream()
@@ -77,17 +77,20 @@ public class RecommendationService {
                                 .sum() * 10.0;
 
                         double genreScore = theirRatings.stream()
-                                .filter(r -> r.getAnime() != null && r.getAnime().getGenres() != null)
+                                .filter(r -> r.getAnime() != null)
                                 .mapToDouble(r -> {
-                                    long match = Arrays.stream(r.getAnime().getGenres().split(","))
-                                            .map(String::trim).filter(myGenres::contains).count();
+
+                                    long match = r.getAnime().getGenreList().stream()
+                                            .filter(myGenres::contains)
+                                            .count();
                                     return match * 2.0;
                                 }).average().orElse(0.0) * 5.0;
 
                         double penalty = theirRatings.stream()
-                                .filter(r -> r.getAnime() != null && r.getAnime().getGenres() != null && r.getScore() >= 7)
-                                .mapToDouble(r -> Arrays.stream(r.getAnime().getGenres().split(","))
-                                        .map(String::trim).filter(dislikedGenres::contains).count() * 1.5)
+                                .filter(r -> r.getAnime() != null && r.getScore() >= 7) // genres != null 체크는 이제 getGenreList가 처리합니다.
+                                .mapToDouble(r -> r.getAnime().getGenreList().stream() // 이 부분을 getGenreList()로 변경
+                                        .filter(dislikedGenres::contains)
+                                        .count() * 1.5)
                                 .sum();
 
                         return new UserScore(userId, workScore + genreScore - penalty);
@@ -126,11 +129,10 @@ public class RecommendationService {
 
     private Set<String> extractGenresByScore(List<AnimeRating> ratings, int threshold, boolean isAbove) {
         return ratings.stream()
-                .filter(r -> r.getAnime() != null && r.getAnime().getGenres() != null)
+                .filter(r -> r.getAnime() != null)
                 .filter(r -> (isAbove ? r.getScore() >= threshold : r.getScore() <= threshold))
-                .flatMap(r -> Arrays.stream(r.getAnime().getGenres().split(",")) // 1. 우선 콤마로만 자른다
-                        .map(String::trim) // 2. 앞뒤에 붙은 불필요한 공백(" ")을 제거한다
-                        .filter(g -> !g.isEmpty()))
+                // [변경 전] .flatMap(r -> Arrays.stream(r.getAnime().getGenres().split(",")).map(String::trim).filter(g -> !g.isEmpty()))
+                .flatMap(r -> r.getAnime().getGenreList().stream()) // [변경 후] 훨씬 읽기 편해졌죠?
                 .collect(Collectors.toSet());
     }
 

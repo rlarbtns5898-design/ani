@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Getter
@@ -40,4 +43,10 @@ public class Anime {
 
     private String demographics;
 
+    public List<String> getGenreList() {
+        if (this.genres == null || this.genres.isEmpty()) return Collections.emptyList();
+        return Arrays.stream(this.genres.split(","))
+                .map(String::trim)
+                .toList();
+    }
 }
