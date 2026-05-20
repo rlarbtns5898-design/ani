@@ -28,7 +28,7 @@ public class RatingDataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // 1. 이미 데이터가 있다면 중복 실행 방지
-        if (ratingRepository.count() > 0) {
+        if (ratingRepository.count() > 100) {
             System.out.println("이미 평점 데이터가 존재하여 초기화를 건너뜁니다.");
             return;
         }
